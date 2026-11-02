@@ -14,10 +14,13 @@ import lombok.Setter;
 @Table(name = "players")
 @Getter @Setter @NoArgsConstructor
 public class Player {
+
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(nullable = false, unique = true)
     private String login;
+
     private String password;
 
     public Player(String login, String password) {

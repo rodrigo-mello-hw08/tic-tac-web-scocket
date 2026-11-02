@@ -1,55 +1,95 @@
 package com.tic.service;
 
+import com.tic.domain.database.Invite;
 import com.tic.domain.database.Player;
+import com.tic.domain.pojo.GameMessages.Event;
 import com.tic.domain.pojo.GameMessages.InviteView;
-import com.tic.domain.pojo.GameMessages.PlayerView;
 import com.tic.domain.pojo.InviteResponse;
 import com.tic.domain.pojo.InviteSent;
-import com.tic.domain.pojo.PendingInvite;
 import com.tic.domain.pojo.StartedRoom;
+import com.tic.exception.GameRuleException;
 import com.tic.mapper.GameMessageMapper;
+import com.tic.repository.InviteRepository;
 import com.tic.validator.InviteValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.event.EventListener;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
 public class InviteService {
+    private final InviteRepository inviteRepository;
     private final PlayerService playerService;
     private final PresenceService presenceService;
     private final RoomService roomService;
     private final GameMessageMapper mapper;
     private final InviteValidator validator;
-    private final Map<String, PendingInvite> pendingInvites = new ConcurrentHashMap<>();
+    private final SimpMessagingTemplate messaging;
 
-    public InviteSent send(Long fromPlayerId, Long toPlayerId) {
-        validator.validateSendRequest(fromPlayerId, toPlayerId);
-        Player from = playerService.requirePlayer(fromPlayerId, fromPlayerId);
-        Player to = playerService.requirePlayer(toPlayerId, fromPlayerId);
-        validator.validateRecipientOnline(fromPlayerId, presenceService.isOnline(to.getId()));
+    @Transactional
+    public InviteSent send(Long requestUserId, Long invitedUserId) {
+        validator.validateSendRequest(requestUserId, invitedUserId);
+        Player requestUser = playerService.requirePlayer(requestUserId, requestUserId);
+        Player invitedUser = playerService.requirePlayer(invitedUserId, requestUserId);
+        validator.validateRecipientOnline(requestUserId, presenceService.isOnline(invitedUser.getId()));
+        if (inviteRepository.existsByRequestUser_IdAndInvitedUser_IdAndPendingTrue(requestUserId, invitedUserId))
+            throw new GameRuleException(requestUserId, "Já existe um convite pendente para este jogador.");
 
-        String inviteId = UUID.randomUUID().toString();
-        pendingInvites.put(inviteId, new PendingInvite(from, to));
-        return new InviteSent(inviteId, from.getId(), to.getId(),
-                new InviteView(inviteId, mapper.toView(from), mapper.toView(to)));
+        Invite invite = new Invite();
+        invite.setRequestUser(requestUser);
+        invite.setInvitedUser(invitedUser);
+        invite.setPending(true);
+        invite.setAccepted(false);
+        invite = inviteRepository.save(invite);
+        InviteView view = toView(invite);
+        return new InviteSent(invite.getId(), requestUserId, invitedUserId, view);
     }
 
     @Transactional
     public InviteResponse respond(String inviteId, Long playerId, boolean accepted) {
-        PendingInvite invite = validator.validateAndConsumeResponse(inviteId, playerId, pendingInvites);
+        if (inviteId == null || playerId == null)
+            throw new GameRuleException(playerId, "Resposta de convite inválida.");
+        Invite invite = inviteRepository.findByIdForUpdate(inviteId)
+                .filter(Invite::isPending)
+                .orElseThrow(() -> new GameRuleException(playerId, "Convite inexistente ou já respondido."));
+        if (!invite.getInvitedUser().getId().equals(playerId))
+            throw new GameRuleException(playerId, "Este convite não foi destinado a este jogador.");
 
-        if (!accepted) {
-            return new InviteResponse(invite.from().getId(), invite.to().getId(), false,
-                    mapper.toView(invite.from()), mapper.toView(invite.to()), null);
-        }
-        StartedRoom started = roomService.createRoom(invite.from(), invite.to());
-        return new InviteResponse(invite.from().getId(), invite.to().getId(), true,
-                mapper.toView(invite.from()), mapper.toView(invite.to()), started);
+        invite.setPending(false);
+        invite.setAccepted(accepted);
+        inviteRepository.save(invite);
+        StartedRoom started = accepted
+                ? roomService.createRoom(invite.getRequestUser(), invite.getInvitedUser()) : null;
+        return new InviteResponse(invite.getId(), invite.getRequestUser().getId(), invite.getInvitedUser().getId(),
+                accepted, mapper.toView(invite.getRequestUser()), mapper.toView(invite.getInvitedUser()), started);
     }
 
+    @Transactional(readOnly = true)
+    public List<InviteView> pendingForInvitedUser(Long playerId) {
+        return inviteRepository.findByInvitedUser_IdAndPendingTrue(playerId).stream().map(this::toView).toList();
+    }
+
+    @EventListener
+    @Transactional
+    public void cancelForOfflinePlayer(PlayerOfflineEvent event) {
+        for (Invite invite : inviteRepository.findPendingForPlayer(event.playerId())) {
+            invite.setPending(false);
+            invite.setAccepted(false);
+            inviteRepository.save(invite);
+            Map<String, Object> payload = Map.of("inviteId", invite.getId(), "otherPlayerId", invite.getInvitedUser().getId());
+            messaging.convertAndSend(topic(invite.getRequestUser().getId()), Event.success("INVITE_CANCELLED", payload));
+            messaging.convertAndSend(topic(invite.getInvitedUser().getId()), Event.success("INVITE_CANCELLED", payload));
+        }
+    }
+
+    private InviteView toView(Invite invite) {
+        return new InviteView(invite.getId(), mapper.toView(invite.getRequestUser()), mapper.toView(invite.getInvitedUser()));
+    }
+
+    private static String topic(Long playerId) { return "/topic/players/" + playerId; }
 }

@@ -1,0 +1,11 @@
+Backend
+- implementar criptografia de senha
+
+Frontend
+- estilizar melhor frontend
+- inserir diagrama na pagina arquitetura
+- explicar melhor a a
+
+README
+- criar guia de como usar a aplicação
+- falar melhor sobre a aplicação e divisão

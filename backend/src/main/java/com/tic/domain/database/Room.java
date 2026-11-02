@@ -21,12 +21,20 @@ import java.util.List;
 @Table(name = "rooms")
 @Getter @Setter @NoArgsConstructor
 public class Room {
+
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @ManyToOne(optional = false, fetch = FetchType.EAGER) @JoinColumn(name = "player_a_id", nullable = false)
     private Player playerA;
+
     @ManyToOne(optional = false, fetch = FetchType.EAGER) @JoinColumn(name = "player_b_id", nullable = false)
     private Player playerB;
+
+    private boolean closed = false;
+    private Integer scoreA = 0;
+    private Integer scoreB = 0;
+
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Match> matches = new ArrayList<>();
 

@@ -26,17 +26,20 @@
       </div>
     </section>
 
-    <section class="users-card" aria-labelledby="users-heading">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">PRESENÇA</p>
-          <h2 id="users-heading">Usuários ativos</h2>
-        </div>
-        <span class="user-count" id="user-count">0</span>
+    <section class="presence-card" aria-labelledby="presence-heading">
+      <div class="section-heading presence-heading">
+        <div><p class="eyebrow">PRESENÇA</p><h2 id="presence-heading">Jogadores</h2></div>
       </div>
-      <ul class="user-list" id="user-list" aria-live="polite">
-        <li class="empty-state">Carregando usuários…</li>
-      </ul>
+      <div class="presence-columns">
+        <section class="presence-column" aria-labelledby="users-heading">
+          <div class="column-heading"><h3 id="users-heading">Usuários ativos</h3><span class="user-count" id="user-count">0</span></div>
+          <ul class="user-list" id="user-list" aria-live="polite"><li class="empty-state">Carregando usuários…</li></ul>
+        </section>
+        <section class="presence-column" aria-labelledby="invites-heading">
+          <div class="column-heading"><h3 id="invites-heading">Convites pendentes</h3><span class="user-count" id="invite-count">0</span></div>
+          <ul class="invite-list" id="invite-list" aria-live="polite"><li class="empty-state">Nenhum convite pendente.</li></ul>
+        </section>
+      </div>
     </section>
 
     <section class="history-card" aria-labelledby="history-heading">

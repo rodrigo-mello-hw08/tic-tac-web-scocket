@@ -30,17 +30,35 @@ h2 { font-size: 1.35rem; }
 .button.secondary { border-color: #27613b; background: #27613b; color: white; }
 .button:disabled { opacity: .5; cursor: not-allowed; }
 
-.welcome-card, .users-card, .history-card { border: 1px solid #e0e8df; border-radius: 20px; background: rgba(255, 255, 255, .94); box-shadow: 0 18px 50px rgba(29, 55, 41, .07); }
+.welcome-card, .users-card, .history-card, .presence-card { border: 1px solid #e0e8df; border-radius: 20px; background: rgba(255, 255, 255, .94); box-shadow: 0 18px 50px rgba(29, 55, 41, .07); }
 .welcome-card { display: flex; align-items: center; gap: 16px; padding: 24px 28px; margin-bottom: 20px; }
 .status-indicator { width: 12px; height: 12px; flex: 0 0 auto; border-radius: 50%; background: #aab4ac; }
 .status-indicator.connected { background: #36a465; box-shadow: 0 0 0 5px #e1f3e7; }
 .muted { margin: 0 0 5px; color: #64716a; font-size: .88rem; }
 
 .users-card, .history-card { padding: 28px; }
+.presence-card { padding: 28px; margin-bottom: 20px; }
+.presence-heading { margin-bottom: 22px; }
+.presence-columns { display: grid; grid-template-columns: 1fr 1fr; }
+.presence-column { min-width: 0; padding: 0 24px; }
+.presence-column:first-child { padding-left: 0; }
+.presence-column + .presence-column { border-left: 1px solid #e5ece5; }
+.presence-column:last-child { padding-right: 0; }
+.column-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.column-heading h3 { margin: 0; font: 600 1rem "Space Grotesk", sans-serif; }
 .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 18px; }
 .user-count { min-width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; background: #e8f2e9; color: #27613b; font-weight: 700; }
 .user-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
 .user-item { min-height: 54px; display: flex; align-items: center; gap: 12px; padding: 0 16px; border: 1px solid #e5ece5; border-radius: 12px; color: #26382d; font-weight: 600; }
+.user-identity { display: flex; align-items: center; gap: 12px; min-width: 0; overflow-wrap: anywhere; }
+.invite-button { min-height: 36px; margin-left: auto; padding: 0 12px; border-color: #cdddcf; color: #27613b; font-size: .8rem; white-space: nowrap; }
+.invite-button:disabled { opacity: .75; }
+.invite-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.invite-item { display: grid; gap: 12px; padding: 14px; border: 1px solid #e5ece5; border-radius: 12px; color: #26382d; }
+.invite-actions { display: flex; gap: 8px; }
+.invite-actions .button { min-height: 36px; padding: 0 12px; font-size: .82rem; }
+.accept-button { border-color: #27613b; background: #27613b; color: white; }
+.decline-button { color: #7d4444; }
 .online-dot { width: 9px; height: 9px; border-radius: 50%; background: #36a465; box-shadow: 0 0 0 4px #e1f3e7; }
 .empty-state { padding: 22px 10px; color: #718078; text-align: center; }
 .history-card { margin-top: 20px; }
@@ -55,7 +73,10 @@ h2 { font-size: 1.35rem; }
 
 @media (max-width: 520px) {
   body { padding: 28px 16px; }
-  .welcome-card, .users-card, .history-card { padding: 21px; }
+  .welcome-card, .users-card, .history-card, .presence-card { padding: 21px; }
+  .presence-columns { grid-template-columns: 1fr; gap: 22px; }
+  .presence-column, .presence-column:first-child, .presence-column:last-child { padding: 0; }
+  .presence-column + .presence-column { padding-top: 20px; border-top: 1px solid #e5ece5; border-left: 0; }
   .section-heading { align-items: flex-start; }
   .construction-badge { font-size: .7rem; }
   .dashboard-footer { align-items: flex-start; flex-direction: column; }

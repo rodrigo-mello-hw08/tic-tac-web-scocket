@@ -7,6 +7,7 @@ import com.tic.exception.GameRuleException;
 import com.tic.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
@@ -26,6 +27,7 @@ public class PresenceService {
     private final Map<String, PendingToken> pendingTokens = new ConcurrentHashMap<>();
     private final PlayerRepository playerRepository;
     private final SimpMessagingTemplate messaging;
+    private final ApplicationEventPublisher events;
 
     public String issueSessionToken(Long playerId) {
         purgeExpiredTokens();
@@ -58,7 +60,9 @@ public class PresenceService {
     }
 
     public boolean logout(String sessionId) {
-        return sessionId != null && sessionPlayers.remove(sessionId) != null;
+        Long playerId = sessionId == null ? null : sessionPlayers.remove(sessionId);
+        if (playerId != null) events.publishEvent(new PlayerOfflineEvent(playerId));
+        return playerId != null;
     }
 
     public java.util.List<PlayerView> activeUsers() {
@@ -76,7 +80,9 @@ public class PresenceService {
 
     @EventListener
     public void onDisconnect(SessionDisconnectEvent event) {
-        if (event.getSessionId() != null && sessionPlayers.remove(event.getSessionId()) != null) {
+        Long playerId = event.getSessionId() == null ? null : sessionPlayers.remove(event.getSessionId());
+        if (playerId != null) {
+            events.publishEvent(new PlayerOfflineEvent(playerId));
             publishActiveUsers();
         }
         // Tokens are independent of the issuing WebSocket and remain valid until consumed or expired.

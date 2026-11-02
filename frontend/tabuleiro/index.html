@@ -1,0 +1,34 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tabuleiro | Jogo da Velha</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.1.1/bundles/stomp.umd.min.js" defer></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <main class="game-shell">
+    <header class="game-header">
+      <div><p class="eyebrow">JOGO DA VELHA</p><h1>Tabuleiro</h1></div>
+      <p class="logged-player">Conectado como <strong id="current-player">…</strong></p>
+    </header>
+    <p class="game-status" id="game-status" role="status" aria-live="polite">Conectando à sala…</p>
+    <section class="scoreboard" aria-label="Placar da partida">
+      <div class="player-score"><span><span id="player-a-name">Jogador A</span> <small id="player-a-symbol">(X)</small></span><strong id="player-a-score">0</strong></div>
+      <span class="score-separator" aria-hidden="true">×</span>
+      <div class="player-score"><span><span id="player-b-name">Jogador B</span> <small id="player-b-symbol">(O)</small></span><strong id="player-b-score">0</strong></div>
+    </section>
+    <section class="board" aria-label="Tabuleiro estático de jogo da velha">
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+    </section>
+    <div class="game-actions">
+      <button class="button resign-button" id="resign-button" type="button" disabled>Desistir</button>
+      <button class="button close-button" id="close-button" type="button" disabled>Encerrar sala</button>
+    </div>
+  </main>
+</body>
+</html>

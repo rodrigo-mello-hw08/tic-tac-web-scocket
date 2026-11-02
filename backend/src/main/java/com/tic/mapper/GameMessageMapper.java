@@ -9,6 +9,8 @@ import com.tic.domain.pojo.GameMessages.PlayerView;
 import com.tic.domain.pojo.GameMessages.RoomView;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class GameMessageMapper {
     public PlayerView toView(Player player) {
@@ -23,7 +25,7 @@ public class GameMessageMapper {
     public MatchView toView(Match match) {
         Board board = match.getBoard();
         return new MatchView(match.getId(), match.getRoom().getId(), toView(match.getPlayerA()),
-                toView(match.getPlayerB()), match.getScoreA(), match.getScoreB(), match.getStatus(),
-                board.getId(), board.getMoves(), board.getCells());
+                toView(match.getPlayerB()), match.getRoom().getScoreA(), match.getRoom().getScoreB(), match.getStatus(),
+                board.getId(), board.getMoves(), List.copyOf(board.getCells()), match.getSymbolA(), match.getSymbolB());
     }
 }

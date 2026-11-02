@@ -1,0 +1,25 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap");
+
+:root { color-scheme: light; font-family: "DM Sans", sans-serif; color: #18221f; background: #f1f5ef; }
+* { box-sizing: border-box; }
+body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 24px; background: radial-gradient(circle at 12% 10%, #dcebd7 0, transparent 32%), radial-gradient(circle at 92% 88%, #d8e7df 0, transparent 30%), #f1f5ef; }
+.game-shell { width: min(100%, 580px); padding: 32px; border: 1px solid #e0e8df; border-radius: 24px; background: rgba(255,255,255,.94); box-shadow: 0 24px 70px rgba(29,55,41,.1); }
+.game-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+.eyebrow { margin: 0 0 6px; color: #47825d; font-size: .72rem; font-weight: 700; letter-spacing: .15em; }
+h1 { margin: 0; font: 700 clamp(1.7rem, 5vw, 2.2rem) "Space Grotesk", sans-serif; letter-spacing: -.04em; }
+.logged-player { margin: 0; color: #64716a; font-size: .9rem; text-align: right; }
+.logged-player strong { display: block; margin-top: 4px; color: #27613b; }
+.game-status { min-height: 1.4em; margin: 16px 0 20px; color: #64716a; font-size: .9rem; text-align: center; }
+.scoreboard { display: flex; align-items: center; justify-content: center; gap: clamp(16px, 5vw, 36px); margin-bottom: 30px; }
+.player-score { display: grid; justify-items: center; gap: 4px; color: #64716a; font-size: .9rem; }
+.player-score strong { color: #27613b; font: 700 2rem "Space Grotesk", sans-serif; }
+.score-separator { color: #aab4ac; font: 600 1.4rem "Space Grotesk", sans-serif; }
+.board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; aspect-ratio: 1; padding: 8px; border-radius: 18px; background: #e8f0e8; }
+.cell { border: 1px solid #d5e0d6; border-radius: 12px; background: #fff; }
+.game-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.button { min-height: 44px; padding: 0 20px; border: 1px solid #d5e0d6; border-radius: 11px; background: #fff; color: #26382d; font: 600 .95rem "DM Sans", sans-serif; cursor: pointer; }
+.button:disabled { opacity: .5; cursor: not-allowed; }
+.resign-button { border-color: #ac6a54; background: #ac6a54; color: #fff; }
+.close-button { border-color: #7c3434; background: #7c3434; color: #fff; }
+@media (max-width: 480px) { .game-shell { padding: 22px; } }
+@media (max-width: 480px) { .game-header { align-items: flex-start; flex-direction: column; } .logged-player { text-align: left; } }

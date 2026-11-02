@@ -20,16 +20,22 @@ import lombok.Setter;
 public class Match {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @ManyToOne(optional = false, fetch = FetchType.EAGER) @JoinColumn(name = "player_a_id")
     private Player playerA;
+
     @ManyToOne(optional = false, fetch = FetchType.EAGER) @JoinColumn(name = "player_b_id")
     private Player playerB;
     private Integer scoreA = 0;
     private Integer scoreB = 0;
     private String status = "ACTIVE";
+    private String symbolA = "X";
+    private String symbolB = "O";
+
     @OneToOne(optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "board_id", nullable = false)
     private Board board;
+
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "room_id")
     private Room room;
 }

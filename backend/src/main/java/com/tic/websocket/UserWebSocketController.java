@@ -47,7 +47,8 @@ public class UserWebSocketController {
         presenceService.login(headers.getSessionId(), playerId);
         var user = playerService.requirePlayer(playerId, null);
         presenceService.publishActiveUsers();
-        return Event.success("LOGGED_IN", new SessionView(user.getId(), user.getLogin(), null));
+        String nextSessionToken = presenceService.issueSessionToken(user.getId());
+        return Event.success("LOGGED_IN", new SessionView(user.getId(), user.getLogin(), nextSessionToken));
     }
 
     @MessageMapping("/users/active")

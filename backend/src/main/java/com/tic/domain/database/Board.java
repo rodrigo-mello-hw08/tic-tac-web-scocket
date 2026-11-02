@@ -21,8 +21,10 @@ import java.util.List;
 @Table(name = "boards")
 @Getter @Setter @NoArgsConstructor
 public class Board {
+
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private Integer moves = 0;
 
     @ElementCollection

@@ -8,6 +8,7 @@ import com.tic.exception.GameRuleException;
 import com.tic.mapper.GameMessageMapper;
 import com.tic.repository.RoomRepository;
 import com.tic.domain.pojo.GameMessages.RoomResult;
+import com.tic.domain.pojo.GameMessages.RoundState;
 import com.tic.domain.pojo.StartedRoom;
 import com.tic.validator.RoomValidator;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,83 @@ public class RoomService {
     private final RoomRepository roomRepository;
     private final GameMessageMapper mapper;
     private final RoomValidator validator;
+
+    @Transactional
+    public RoundState move(Long roomId, Long playerId, Integer cellIndex) {
+        Room room = findRoomForMove(roomId, playerId);
+        Match match = findActiveMatch(room, playerId);
+        validateCellIndex(cellIndex, playerId);
+        Board board = match.getBoard();
+        String symbol = applyMove(match, board, playerId, cellIndex);
+
+        boolean won = hasWinner(board.getCells(), symbol);
+        boolean draw = !won && board.getMoves() == 9;
+
+        Long winnerId = finishRound(room, match, playerId, won, draw);
+        StartedRoom next = createNextMatchIfFinished(room, match, won || draw);
+        roomRepository.save(room);
+        Long nextId = (won || draw) ? null : (playerId.equals(room.getPlayerA().getId()) ? room.getPlayerB().getId() : room.getPlayerA().getId());
+        return new RoundState(roomId, mapper.toView(match), nextId, won ? "WIN" : draw ? "DRAW" : null, winnerId, next);
+    }
+
+    private Room findRoomForMove(Long roomId, Long playerId) {
+        Room room = roomRepository.findByIdForUpdate(roomId).orElseThrow(() -> new GameRuleException(playerId, "Sala inexistente ou jogador inválido."));
+        validator.validatePlayerCanAccess(room, playerId);
+        if (room.isClosed()) throw new GameRuleException(playerId, "A sala está encerrada.");
+        return room;
+    }
+
+    private Match findActiveMatch(Room room, Long playerId) {
+        return room.getMatches().stream().filter(m -> "ACTIVE".equals(m.getStatus())).max(Comparator.comparing(Match::getId))
+                .orElseThrow(() -> new GameRuleException(playerId, "Não há partida ativa nesta sala."));
+    }
+
+    private void validateCellIndex(Integer index, Long playerId) {
+        if (index == null || index < 0 || index > 8) throw new GameRuleException(playerId, "Índice da casa inválido.");
+    }
+
+    private String applyMove(Match match, Board board, Long playerId, int index) {
+        String symbol = board.getMoves() % 2 == 0 ? "X" : "O";
+        Long xPlayer = "X".equals(match.getSymbolA()) ? match.getPlayerA().getId() : match.getPlayerB().getId();
+        Long expected = board.getMoves() % 2 == 0 ? xPlayer : (xPlayer.equals(match.getPlayerA().getId()) ? match.getPlayerB().getId() : match.getPlayerA().getId());
+        if (!expected.equals(playerId)) throw new GameRuleException(playerId, "Não é seu turno.");
+        if (!board.getCells().get(index).isEmpty()) throw new GameRuleException(playerId, "Casa já ocupada.");
+        board.getCells().set(index, symbol);
+        board.setMoves(board.getMoves() + 1);
+        return symbol;
+    }
+
+    private Long finishRound(Room room, Match match, Long playerId, boolean won, boolean draw) {
+        if (!won && !draw) return null;
+        match.setStatus("FINISHED");
+        if (!won) return null;
+        if (playerId.equals(room.getPlayerA().getId())) room.setScoreA(room.getScoreA() + 1);
+        else room.setScoreB(room.getScoreB() + 1);
+        return playerId;
+    }
+
+    private StartedRoom createNextMatchIfFinished(Room room, Match match, boolean finished) {
+        if (!finished) return null;
+        Match following = createMatch(room, match.getSymbolB(), match.getSymbolA());
+        return new StartedRoom(mapper.toView(room, following), mapper.toView(following));
+    }
+    private boolean hasWinner(java.util.List<String> c, String s) {
+        int[][] lines = {{0,1,2},{3,4,5},{6,7,8},{0,3,6},{1,4,7},{2,5,8},{0,4,8},{2,4,6}};
+        int winningProduct = "X".equals(s) ? 27 : 125;
+        for (int[] line : lines) {
+            int product = cellValue(c.get(line[0])) * cellValue(c.get(line[1])) * cellValue(c.get(line[2]));
+            if (product == winningProduct) return true;
+        }
+        return false;
+    }
+
+    private int cellValue(String cell) {
+        return switch (cell) {
+            case "X" -> 3;
+            case "O" -> 5;
+            default -> 1;
+        };
+    }
 
     @Transactional
     public StartedRoom createRoom(Player playerA, Player playerB) {

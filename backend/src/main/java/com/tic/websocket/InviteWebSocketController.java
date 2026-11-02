@@ -49,8 +49,8 @@ public class InviteWebSocketController {
                 return;
             }
             StartedRoom started = response.startedRoom();
-            messaging.convertAndSend(topic(response.fromPlayerId()), Event.success("ROOM_JOINED", started.room()));
-            messaging.convertAndSend(topic(response.toPlayerId()), Event.success("ROOM_JOINED", started.room()));
+            messaging.convertAndSend(topic(response.fromPlayerId()), Event.success("ROOM_JOINED", started));
+            messaging.convertAndSend(topic(response.toPlayerId()), Event.success("ROOM_JOINED", started));
         } catch (GameRuleException exception) {
             messaging.convertAndSend(topic(playerId), Event.error(exception.getMessage()));
         }

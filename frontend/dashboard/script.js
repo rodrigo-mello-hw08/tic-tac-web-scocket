@@ -6,6 +6,7 @@ else {
   const connectionIndicator = $("#connection-indicator"), logoutButton = $("#logout-button");
   const userList = $("#user-list"), inviteList = $("#invite-list");
   const userCount = $("#user-count"), inviteCount = $("#invite-count"), errorMessage = $("#error-message");
+  const historyList = $("#history-list");
   let authenticated = false, redirecting = false, authTimeout, currentUserId, client;
   const pendingOutgoing = new Map(), pendingIncoming = new Map();
 
@@ -26,10 +27,11 @@ else {
     if (client?.active) client.deactivate().finally(() => window.location.replace("../index.html"));
     else window.location.replace("../index.html");
   }
-  function goToRoom(room) {
+  function goToRoom(startedRoom) {
     if (redirecting) return;
     redirecting = true;
-    sessionStorage.setItem("activeRoom", JSON.stringify(room));
+    sessionStorage.setItem("activeRoom", JSON.stringify(startedRoom.room));
+    sessionStorage.setItem("activeMatch", JSON.stringify(startedRoom.match));
     sessionStorage.setItem("currentUser", JSON.stringify({ id: currentUserId, login: currentLogin.textContent }));
     if (client?.active) client.deactivate().finally(() => window.location.assign("../tabuleiro/index.html"));
     else window.location.assign("../tabuleiro/index.html");
@@ -86,6 +88,21 @@ else {
       item.append(label, actions); inviteList.append(item);
     }
   }
+  function renderHistory(entries) {
+    historyList.replaceChildren();
+    if (!entries.length) {
+      const empty = document.createElement("li"); empty.className = "empty-state";
+      empty.textContent = "Você ainda não tem salas finalizadas."; historyList.append(empty); return;
+    }
+    for (const entry of entries) {
+      const item = document.createElement("li"); item.className = "history-item";
+      const players = document.createElement("span"); players.className = "history-players";
+      players.textContent = `${entry.playerName} ${entry.playerScore} × ${entry.opponentName} ${entry.opponentScore}`;
+      const result = document.createElement("strong"); result.className = `history-result ${entry.result.toLowerCase()}`;
+      result.textContent = entry.result;
+      item.append(players, result); historyList.append(item);
+    }
+  }
   function handleMessage(message) {
     let event;
     try { event = JSON.parse(message.body); }
@@ -100,9 +117,11 @@ else {
       if (event.data.sessionToken) sessionStorage.setItem("sessionToken", event.data.sessionToken);
       client.subscribe(`/topic/players/${currentUserId}`, handleMessage);
       publish("/app/invites/pending", {});
+      publish("/app/history/list", {});
       publish("/app/users/active", {}); renderUsers(activeUsers); return;
     }
     if (event.type === "ACTIVE_USERS") { activeUsers = Array.isArray(event.data) ? event.data : []; renderUsers(activeUsers); return; }
+    if (event.type === "ROOM_HISTORY") { renderHistory(Array.isArray(event.data) ? event.data : []); return; }
     if (event.type === "INVITE_RECEIVED") { pendingIncoming.set(event.data.inviteId, event.data); renderInvites(); return; }
     if (event.type === "INVITES_PENDING") {
       pendingIncoming.clear();

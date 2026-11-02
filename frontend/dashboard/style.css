@@ -62,8 +62,12 @@ h2 { font-size: 1.35rem; }
 .online-dot { width: 9px; height: 9px; border-radius: 50%; background: #36a465; box-shadow: 0 0 0 4px #e1f3e7; }
 .empty-state { padding: 22px 10px; color: #718078; text-align: center; }
 .history-card { margin-top: 20px; }
-.construction-badge { flex: 0 0 auto; padding: 8px 12px; border: 1px solid #e8d9a9; border-radius: 999px; background: #fbf5df; color: #80661d; font-size: .78rem; font-weight: 700; }
-.history-message { margin: 0; padding: 22px 18px; border: 1px dashed #d7e3d7; border-radius: 14px; background: #f8faf7; color: #64716a; line-height: 1.5; text-align: center; }
+.history-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.history-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 54px; padding: 12px 16px; border: 1px solid #e5ece5; border-radius: 12px; color: #26382d; font-weight: 600; }
+.history-players { overflow-wrap: anywhere; }
+.history-result { flex: 0 0 auto; color: #64716a; font-size: .8rem; }
+.history-result.vencedor { color: #27613b; }
+.history-result.perdedor { color: #a34c3c; }
 .error-message { margin-top: 18px; color: #a33333; line-height: 1.5; }
 .dashboard-footer { width: min(100%, 900px); display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 34px auto 0; padding-top: 20px; border-top: 1px solid #dce5dc; color: #64716a; font-size: .85rem; }
 .footer-authors { margin: 0; line-height: 1.6; }

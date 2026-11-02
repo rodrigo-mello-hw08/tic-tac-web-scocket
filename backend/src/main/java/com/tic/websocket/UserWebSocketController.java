@@ -10,7 +10,6 @@ import com.tic.exception.GameRuleException;
 import com.tic.service.PlayerService;
 import com.tic.service.PresenceService;
 import lombok.AllArgsConstructor;
-import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.annotation.SendToUser;
@@ -67,9 +66,4 @@ public class UserWebSocketController {
         return Event.success("LOGGED_OUT", null);
     }
 
-    @MessageExceptionHandler(GameRuleException.class)
-    @SendToUser(value = "/queue/users", broadcast = false)
-    public Event handleRuleError(GameRuleException exception) {
-        return Event.error(exception.getMessage());
-    }
 }

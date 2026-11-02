@@ -14,9 +14,7 @@ import com.tic.domain.pojo.InviteSent;
 import com.tic.domain.pojo.StartedRoom;
 import lombok.AllArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
@@ -32,16 +30,6 @@ public class GameWebSocketController {
     private final InviteService invites;
     private final RoomService rooms;
     private final SimpMessagingTemplate messaging;
-
-
-    @MessageMapping("/ping-pong")
-    @SendTo("/topic/ping-pong")
-    public Event health(HealthRequest request) {
-        if (request == null || !"ping".equalsIgnoreCase(request.message())) {
-            return Event.error("Expected message 'ping'");
-        }
-        return Event.success("PONG", java.util.Map.of("message", "pong"));
-    }
 
     @MessageMapping("/invites/send")
     public void sendInvite(InviteRequest request, SimpMessageHeaderAccessor headers) {
@@ -105,11 +93,4 @@ public class GameWebSocketController {
             if (playerId != null) messaging.convertAndSend(playerTopic(playerId), Event.error(exception.getMessage()));
         }
     }
-
-    @MessageExceptionHandler(GameRuleException.class)
-    @SendToUser(value = "/queue/users", broadcast = false)
-    public Event handleAuthenticationError(GameRuleException exception) {
-        return Event.error(exception.getMessage());
-    }
-
 }

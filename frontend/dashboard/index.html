@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard | Jogo da Velha</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.1.1/bundles/stomp.umd.min.js" defer></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <main class="dashboard-shell">
+    <header class="dashboard-header">
+      <div>
+        <p class="eyebrow">JOGO DA VELHA</p>
+        <h1>Dashboard</h1>
+      </div>
+      <button class="button secondary" id="logout-button" type="button" disabled>Sair</button>
+    </header>
+
+    <section class="welcome-card" aria-live="polite">
+      <div class="status-indicator" id="connection-indicator"></div>
+      <div>
+        <p class="muted" id="connection-status">Conectando ao servidor…</p>
+        <h2>Olá, <span id="current-login">…</span></h2>
+      </div>
+    </section>
+
+    <section class="users-card" aria-labelledby="users-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">PRESENÇA</p>
+          <h2 id="users-heading">Usuários ativos</h2>
+        </div>
+        <span class="user-count" id="user-count">0</span>
+      </div>
+      <ul class="user-list" id="user-list" aria-live="polite">
+        <li class="empty-state">Carregando usuários…</li>
+      </ul>
+    </section>
+    <p class="error-message" id="error-message" role="alert" hidden></p>
+  </main>
+</body>
+</html>

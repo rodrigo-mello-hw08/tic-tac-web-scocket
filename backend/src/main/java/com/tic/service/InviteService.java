@@ -1,9 +1,15 @@
 package com.tic.service;
 
-import com.tic.domain.Player;
-import com.tic.exception.GameRuleException;
-import com.tic.domain.GameMessages.InviteView;
-import com.tic.domain.GameMessages.PlayerView;
+import com.tic.domain.database.Player;
+import com.tic.domain.pojo.GameMessages.InviteView;
+import com.tic.domain.pojo.GameMessages.PlayerView;
+import com.tic.domain.pojo.InviteResponse;
+import com.tic.domain.pojo.InviteSent;
+import com.tic.domain.pojo.PendingInvite;
+import com.tic.domain.pojo.StartedRoom;
+import com.tic.mapper.GameMessageMapper;
+import com.tic.validator.InviteValidator;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,27 +18,20 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
+@RequiredArgsConstructor
 public class InviteService {
-    private final PlayerService players;
-    private final PresenceService presence;
-    private final RoomService rooms;
+    private final PlayerService playerService;
+    private final PresenceService presenceService;
+    private final RoomService roomService;
     private final GameMessageMapper mapper;
+    private final InviteValidator validator;
     private final Map<String, PendingInvite> pendingInvites = new ConcurrentHashMap<>();
 
-    public InviteService(PlayerService players, PresenceService presence, RoomService rooms, GameMessageMapper mapper) {
-        this.players = players;
-        this.presence = presence;
-        this.rooms = rooms;
-        this.mapper = mapper;
-    }
-
     public InviteSent send(Long fromPlayerId, Long toPlayerId) {
-        if (fromPlayerId == null || toPlayerId == null || fromPlayerId.equals(toPlayerId))
-            throw new GameRuleException(fromPlayerId, "Convite inválido.");
-        Player from = players.requirePlayer(fromPlayerId, fromPlayerId);
-        Player to = players.requirePlayer(toPlayerId, fromPlayerId);
-        if (!presence.isOnline(to.getId()))
-            throw new GameRuleException(fromPlayerId, "O jogador convidado não está conectado.");
+        validator.validateSendRequest(fromPlayerId, toPlayerId);
+        Player from = playerService.requirePlayer(fromPlayerId, fromPlayerId);
+        Player to = playerService.requirePlayer(toPlayerId, fromPlayerId);
+        validator.validateRecipientOnline(fromPlayerId, presenceService.isOnline(to.getId()));
 
         String inviteId = UUID.randomUUID().toString();
         pendingInvites.put(inviteId, new PendingInvite(from, to));
@@ -42,27 +41,15 @@ public class InviteService {
 
     @Transactional
     public InviteResponse respond(String inviteId, Long playerId, boolean accepted) {
-        if (inviteId == null || playerId == null)
-            throw new GameRuleException(playerId, "Resposta de convite inválida.");
-        PendingInvite invite = pendingInvites.get(inviteId);
-        if (invite == null || !invite.to().getId().equals(playerId))
-            throw new GameRuleException(playerId, "Convite inexistente ou não destinado a este jogador.");
-        if (!pendingInvites.remove(inviteId, invite))
-            throw new GameRuleException(playerId, "Este convite já foi respondido.");
+        PendingInvite invite = validator.validateAndConsumeResponse(inviteId, playerId, pendingInvites);
 
         if (!accepted) {
             return new InviteResponse(invite.from().getId(), invite.to().getId(), false,
                     mapper.toView(invite.from()), mapper.toView(invite.to()), null);
         }
-        RoomService.StartedRoom started = rooms.createRoom(invite.from(), invite.to());
+        StartedRoom started = roomService.createRoom(invite.from(), invite.to());
         return new InviteResponse(invite.from().getId(), invite.to().getId(), true,
                 mapper.toView(invite.from()), mapper.toView(invite.to()), started);
     }
 
-    private record PendingInvite(Player from, Player to) {}
-
-    public record InviteSent(String inviteId, Long fromPlayerId, Long toPlayerId, InviteView view) {}
-
-    public record InviteResponse(Long fromPlayerId, Long toPlayerId, boolean accepted,
-                                 PlayerView fromPlayer, PlayerView toPlayer, RoomService.StartedRoom startedRoom) {}
 }

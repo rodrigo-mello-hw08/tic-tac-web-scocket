@@ -105,6 +105,20 @@ h1 {
 code { color: #27613b; }
 .error-message { margin: 18px 0 0; color: #a33333; font-size: .9rem; line-height: 1.5; }
 
+.auth-card { text-align: left; }
+.auth-card > .eyebrow, .auth-card > h1, .auth-card > .description { text-align: center; }
+.auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 0 0 22px; padding: 5px; border-radius: 12px; background: #edf2ed; }
+.auth-tab { min-height: 40px; border: 0; border-radius: 9px; background: transparent; color: #64716a; font: 600 .95rem "DM Sans", sans-serif; cursor: pointer; }
+.auth-tab.active { background: white; color: #27613b; box-shadow: 0 2px 7px rgba(29, 55, 41, .08); }
+.auth-form { display: grid; gap: 10px; }
+.auth-form label { margin-top: 5px; color: #35463b; font-size: .9rem; font-weight: 600; }
+.auth-form input { width: 100%; min-height: 46px; padding: 0 13px; border: 1px solid #d5e0d6; border-radius: 10px; background: #fff; color: #18221f; font: 1rem "DM Sans", sans-serif; }
+.auth-form input:focus { outline: 3px solid #dcebd7; border-color: #47825d; }
+.auth-form .button { margin-top: 12px; }
+.connection-status { min-height: 1.3em; margin: 16px 0 0; color: #557260; font-size: .88rem; text-align: center; }
+.secondary-link { display: block; margin-top: 22px; color: #557260; font-size: .85rem; text-align: center; text-decoration: none; }
+.secondary-link:hover { color: #245d39; text-decoration: underline; }
+
 @media (max-width: 480px) {
   .card { padding: 30px 24px; }
 }

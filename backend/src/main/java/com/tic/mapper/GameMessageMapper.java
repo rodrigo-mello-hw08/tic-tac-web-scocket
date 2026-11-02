@@ -1,18 +1,18 @@
-package com.tic.service;
+package com.tic.mapper;
 
-import com.tic.domain.Board;
-import com.tic.domain.Match;
-import com.tic.domain.Player;
-import com.tic.domain.Room;
-import com.tic.domain.GameMessages.MatchView;
-import com.tic.domain.GameMessages.PlayerView;
-import com.tic.domain.GameMessages.RoomView;
+import com.tic.domain.database.Board;
+import com.tic.domain.database.Match;
+import com.tic.domain.database.Player;
+import com.tic.domain.database.Room;
+import com.tic.domain.pojo.GameMessages.MatchView;
+import com.tic.domain.pojo.GameMessages.PlayerView;
+import com.tic.domain.pojo.GameMessages.RoomView;
 import org.springframework.stereotype.Component;
 
 @Component
 public class GameMessageMapper {
     public PlayerView toView(Player player) {
-        return new PlayerView(player.getId(), player.getName());
+        return new PlayerView(player.getId(), player.getLogin());
     }
 
     public RoomView toView(Room room, Match activeMatch) {

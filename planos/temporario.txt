@@ -1,0 +1,5 @@
+quero reescrever completamente o fluxo de usuarios
+
+preciso que sejam criados 2 planos na pasta @folder:planos
+um chamado dedicado para as alterações do backend e outro para
+crie uma nova "Controller" de websocket dedicada para tal

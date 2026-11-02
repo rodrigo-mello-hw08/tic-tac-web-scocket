@@ -1,15 +1,18 @@
-package com.tic.domain;
+package com.tic.domain.pojo;
 
 public final class GameMessages {
     private GameMessages() {}
 
-    public record RegisterRequest(String name, String password) {}
+    public record RegisterRequest(String login, String password) {}
     public record HealthRequest(String message) {}
-    public record LoginRequest(Long playerId, String password) {}
+    public record LoginRequest(String login, String password) {}
+    public record SessionRequest(String sessionToken) {}
+    public record EmptyRequest() {}
     public record InviteRequest(Long fromPlayerId, Long toPlayerId) {}
     public record InviteResponseRequest(String inviteId, Long playerId, boolean accepted) {}
     public record StartNextMatchRequest(Long roomId, Long playerId) {}
-    public record PlayerView(Long id, String name) {}
+    public record PlayerView(Long id, String login) {}
+    public record SessionView(Long id, String login, String sessionToken) {}
     public record InviteView(String inviteId, PlayerView from, PlayerView to) {}
     public record RoomView(Long roomId, PlayerView playerA, PlayerView playerB, Long activeMatchId) {}
     public record MatchView(Long matchId, Long roomId, PlayerView playerA, PlayerView playerB,

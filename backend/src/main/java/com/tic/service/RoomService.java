@@ -1,25 +1,26 @@
 package com.tic.service;
 
-import com.tic.domain.Board;
-import com.tic.domain.Match;
-import com.tic.domain.Player;
-import com.tic.domain.Room;
+import com.tic.domain.database.Board;
+import com.tic.domain.database.Match;
+import com.tic.domain.database.Player;
+import com.tic.domain.database.Room;
 import com.tic.exception.GameRuleException;
+import com.tic.mapper.GameMessageMapper;
 import com.tic.repository.RoomRepository;
-import com.tic.domain.GameMessages.MatchView;
-import com.tic.domain.GameMessages.RoomView;
+import com.tic.domain.pojo.GameMessages.MatchView;
+import com.tic.domain.pojo.GameMessages.RoomView;
+import com.tic.domain.pojo.StartedRoom;
+import com.tic.validator.RoomValidator;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@AllArgsConstructor
 public class RoomService {
-    private final RoomRepository rooms;
+    private final RoomRepository roomRepository;
     private final GameMessageMapper mapper;
-
-    public RoomService(RoomRepository rooms, GameMessageMapper mapper) {
-        this.rooms = rooms;
-        this.mapper = mapper;
-    }
+    private final RoomValidator validator;
 
     @Transactional
     public StartedRoom createRoom(Player playerA, Player playerB) {
@@ -27,21 +28,18 @@ public class RoomService {
         room.setPlayerA(playerA);
         room.setPlayerB(playerB);
         Match match = createMatch(room);
-        rooms.save(room);
+        roomRepository.save(room);
         return new StartedRoom(mapper.toView(room, match), mapper.toView(match));
     }
 
     @Transactional
     public StartedRoom startNextMatch(Long roomId, Long playerId) {
-        Room room = rooms.findById(roomId)
+        Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new GameRuleException(playerId, "Sala inexistente ou jogador não pertence a ela."));
-        if (!room.getPlayerA().getId().equals(playerId) && !room.getPlayerB().getId().equals(playerId))
-            throw new GameRuleException(playerId, "Sala inexistente ou jogador não pertence a ela.");
-        if (room.getMatches().stream().anyMatch(match -> "ACTIVE".equals(match.getStatus())))
-            throw new GameRuleException(playerId, "A sala já possui uma partida ativa.");
+        validator.validateCanStartNextMatch(room, playerId);
 
         Match match = createMatch(room);
-        rooms.save(room);
+        roomRepository.save(room);
         return new StartedRoom(mapper.toView(room, match), mapper.toView(match));
     }
 
@@ -53,6 +51,4 @@ public class RoomService {
         room.addMatch(match);
         return match;
     }
-
-    public record StartedRoom(RoomView room, MatchView match) {}
 }

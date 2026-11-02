@@ -1,4 +1,4 @@
-package com.tic.domain;
+package com.tic.domain.database;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;

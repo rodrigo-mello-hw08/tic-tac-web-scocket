@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ping-pong | Jogo da Velha</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.1.1/bundles/stomp.umd.min.js" defer></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <main class="card">
+    <a class="back-link" href="../index.html">← Início</a>
+    <p class="eyebrow">TESTE DE CONEXÃO</p>
+    <h1>Ping-pong</h1>
+    <p class="description">Conecte ao servidor, inicie a assinatura e envie um ping.</p>
+
+    <div class="status-row" aria-live="polite">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="connection-status">Desconectado</span>
+    </div>
+
+    <div class="actions">
+      <button class="button primary" id="connect-button" type="button">Conectar</button>
+      <button class="button" id="disconnect-button" type="button" disabled>Desconectar</button>
+      <button class="button" id="subscribe-button" type="button" disabled>Iniciar jogo</button>
+      <button class="button" id="ping-button" type="button" disabled>Ping</button>
+    </div>
+    <p class="hint">Resposta esperada: <code>pong</code></p>
+    <p class="error-message" id="error-message" role="alert" hidden></p>
+  </main>
+</body>
+</html>

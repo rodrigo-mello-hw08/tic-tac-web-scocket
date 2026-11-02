@@ -4,9 +4,9 @@ import com.tic.domain.Board;
 import com.tic.domain.Match;
 import com.tic.domain.Player;
 import com.tic.domain.Room;
-import com.tic.websocket.GameMessages.MatchView;
-import com.tic.websocket.GameMessages.PlayerView;
-import com.tic.websocket.GameMessages.RoomView;
+import com.tic.domain.GameMessages.MatchView;
+import com.tic.domain.GameMessages.PlayerView;
+import com.tic.domain.GameMessages.RoomView;
 import org.springframework.stereotype.Component;
 
 @Component

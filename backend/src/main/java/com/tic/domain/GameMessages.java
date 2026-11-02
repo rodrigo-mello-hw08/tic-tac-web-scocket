@@ -1,9 +1,10 @@
-package com.tic.websocket;
+package com.tic.domain;
 
 public final class GameMessages {
     private GameMessages() {}
 
     public record RegisterRequest(String name, String password) {}
+    public record HealthRequest(String message) {}
     public record LoginRequest(Long playerId, String password) {}
     public record InviteRequest(Long fromPlayerId, Long toPlayerId) {}
     public record InviteResponseRequest(String inviteId, Long playerId, boolean accepted) {}

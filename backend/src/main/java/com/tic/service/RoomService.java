@@ -6,8 +6,8 @@ import com.tic.domain.Player;
 import com.tic.domain.Room;
 import com.tic.exception.GameRuleException;
 import com.tic.repository.RoomRepository;
-import com.tic.websocket.GameMessages.MatchView;
-import com.tic.websocket.GameMessages.RoomView;
+import com.tic.domain.GameMessages.MatchView;
+import com.tic.domain.GameMessages.RoomView;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -3,7 +3,7 @@ package com.tic.service;
 import com.tic.domain.Player;
 import com.tic.exception.GameRuleException;
 import com.tic.repository.PlayerRepository;
-import com.tic.websocket.GameMessages.PlayerView;
+import com.tic.domain.GameMessages.PlayerView;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -1,17 +1,20 @@
 package com.tic.websocket;
 
+import com.tic.domain.GameMessages;
 import com.tic.exception.GameRuleException;
 import com.tic.service.InviteService;
 import com.tic.service.PlayerService;
 import com.tic.service.PresenceService;
 import com.tic.service.RoomService;
-import com.tic.websocket.GameMessages.Event;
-import com.tic.websocket.GameMessages.InviteRequest;
-import com.tic.websocket.GameMessages.InviteResponseRequest;
-import com.tic.websocket.GameMessages.LoginRequest;
-import com.tic.websocket.GameMessages.RegisterRequest;
-import com.tic.websocket.GameMessages.StartNextMatchRequest;
+import com.tic.domain.GameMessages.Event;
+import com.tic.domain.GameMessages.InviteRequest;
+import com.tic.domain.GameMessages.InviteResponseRequest;
+import com.tic.domain.GameMessages.LoginRequest;
+import com.tic.domain.GameMessages.RegisterRequest;
+import com.tic.domain.GameMessages.StartNextMatchRequest;
+import com.tic.domain.GameMessages.HealthRequest;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
@@ -31,6 +34,15 @@ public class GameWebSocketController {
         this.invites = invites;
         this.rooms = rooms;
         this.messaging = messaging;
+    }
+
+    @MessageMapping("/ping-pong")
+    @SendTo("/topic/ping-pong")
+    public Event health(HealthRequest request) {
+        if (request == null || !"ping".equalsIgnoreCase(request.message())) {
+            return Event.error("Expected message 'ping'");
+        }
+        return Event.success("PONG", java.util.Map.of("message", "pong"));
     }
 
     @MessageMapping("/players/register")

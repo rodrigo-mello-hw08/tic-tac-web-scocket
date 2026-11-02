@@ -1,0 +1,13 @@
+Backend
+- implementar criptografia de senha
+- implementar wss
+- pensar no caso do mesmo usuario tentar logar 2x
+
+Frontend
+- estilizar melhor frontend
+- inserir diagrama na pagina arquitetura
+- explicar melhor a a
+
+README
+- criar guia de como usar a aplicação
+- falar melhor sobre a aplicação e divisão

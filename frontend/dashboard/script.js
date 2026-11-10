@@ -2,7 +2,7 @@ const sessionToken = sessionStorage.getItem("sessionToken");
 if (!sessionToken) window.location.replace("../index.html");
 else {
   const $ = (selector) => document.querySelector(selector);
-  const currentLogin = $("#current-login"), connectionStatus = $("#connection-status");
+  const currentLogin = $("#current-login"), currentAvatar = $("#current-avatar"), connectionStatus = $("#connection-status");
   const connectionIndicator = $("#connection-indicator"), logoutButton = $("#logout-button");
   const userList = $("#user-list"), inviteList = $("#invite-list");
   const userCount = $("#user-count"), inviteCount = $("#invite-count"), errorMessage = $("#error-message");
@@ -48,18 +48,23 @@ else {
     for (const user of others) {
       const item = document.createElement("li"); item.className = "user-item";
       const identity = document.createElement("span"); identity.className = "user-identity";
+      const avatar = document.createElement("span"); avatar.className = "user-avatar"; avatar.setAttribute("aria-hidden", "true");
+      avatar.textContent = user.login.slice(0, 2);
       const dot = document.createElement("span"); dot.className = "online-dot";
       const login = document.createElement("span"); login.textContent = user.login;
-      identity.append(dot, login);
+      identity.append(avatar, dot, login);
       const button = document.createElement("button"); button.className = "button invite-button"; button.type = "button";
       const pending = pendingOutgoing.get(user.id);
       button.disabled = Boolean(pending) || !client.connected;
-      button.textContent = pending ? "⏳" : "Enviar convite";
+      if (pending) {
+        const spinner = document.createElement("span"); spinner.className = "spinner"; spinner.setAttribute("aria-hidden", "true");
+        button.append(spinner, " Aguardando");
+      } else button.textContent = "Convidar";
       button.setAttribute("aria-label", pending ? `Aguardando resposta de ${user.login}` : `Enviar convite para ${user.login}`);
       button.title = pending ? "Aguardando resposta" : "Enviar convite";
       button.addEventListener("click", () => {
         if (!client.connected || pendingOutgoing.has(user.id)) return;
-        button.disabled = true; button.textContent = "⏳";
+        button.disabled = true; button.textContent = "Aguardando…";
         pendingOutgoing.set(user.id, { inviteId: null, user });
         renderUsers(activeUsers);
         publish("/app/invites/send", { toPlayerId: user.id });
@@ -112,6 +117,7 @@ else {
       if (authTimeout) clearTimeout(authTimeout);
       if (!event.data?.id || !event.data?.login) { goHome("O servidor não confirmou sua sessão."); return; }
       authenticated = true; currentUserId = event.data.id; currentLogin.textContent = event.data.login;
+      currentAvatar.textContent = event.data.login.slice(0, 2);
       connectionStatus.textContent = "Conectado e autenticado"; connectionIndicator.classList.add("connected");
       logoutButton.disabled = false;
       if (event.data.sessionToken) sessionStorage.setItem("sessionToken", event.data.sessionToken);

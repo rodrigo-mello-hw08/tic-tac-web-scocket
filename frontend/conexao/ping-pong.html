@@ -3,31 +3,61 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Ping-pong | Jogo da Velha</title>
+  <meta name="color-scheme" content="light dark">
+  <title>Diagnóstico de conexão | Jogo da Velha</title>
+  <link rel="stylesheet" href="../shared/theme.css">
   <link rel="stylesheet" href="style.css">
+  <script src="../shared/theme.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.1.1/bundles/stomp.umd.min.js" defer></script>
   <script src="script.js" defer></script>
 </head>
 <body>
-  <main class="card">
-    <a class="back-link" href="../index.html">← Início</a>
-    <p class="eyebrow">TESTE DE CONEXÃO</p>
-    <h1>Ping-pong</h1>
-    <p class="description">Conecte ao servidor, inicie a assinatura e envie um ping.</p>
+  <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
+  <main class="card surface-card" id="main-content">
+    <header class="page-header">
+      <a class="back-link" href="../index.html">← Início</a>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Ativar tema escuro"></button>
+    </header>
 
-    <div class="status-row" aria-live="polite">
-      <span class="status-dot" id="status-dot"></span>
-      <span id="connection-status">Desconectado</span>
-    </div>
+    <p class="eyebrow">DIAGNÓSTICO STOMP</p>
+    <h1>Conexão em tempo real</h1>
+    <p class="description">Conecte, assine o tópico e envie um ping para verificar a comunicação com o servidor.</p>
 
-    <div class="actions">
+    <section class="connection-panel" aria-labelledby="connection-heading">
+      <div class="status-row" aria-live="polite" aria-atomic="true">
+        <span class="status-dot" id="status-dot" aria-hidden="true"></span>
+        <div>
+          <span class="status-label" id="connection-heading">Estado da conexão</span>
+          <strong id="connection-status">Desconectado</strong>
+        </div>
+      </div>
+      <dl class="metrics">
+        <div><dt>Endpoint</dt><dd><code>ws://localhost:8080/ws</code></dd></div>
+        <div><dt>Latência</dt><dd id="latency-value">—</dd></div>
+        <div><dt>Última resposta</dt><dd id="response-time">—</dd></div>
+        <div><dt>Conteúdo</dt><dd id="response-value">Aguardando ping</dd></div>
+      </dl>
+    </section>
+
+    <div class="actions" aria-label="Ações de diagnóstico">
       <button class="button primary" id="connect-button" type="button">Conectar</button>
       <button class="button" id="disconnect-button" type="button" disabled>Desconectar</button>
       <button class="button" id="subscribe-button" type="button" disabled>Iniciar jogo</button>
-      <button class="button" id="ping-button" type="button" disabled>Ping</button>
+      <button class="button" id="ping-button" type="button" disabled>Enviar ping</button>
     </div>
-    <p class="hint">Resposta esperada: <code>pong</code></p>
+
+    <p class="hint">Resposta esperada: <code>pong</code>, exibida neste painel e em uma janela de alerta.</p>
     <p class="error-message" id="error-message" role="alert" hidden></p>
+
+    <details class="technical-details">
+      <summary>Detalhes técnicos</summary>
+      <dl>
+        <div><dt>Protocolo</dt><dd>WebSocket + STOMP</dd></div>
+        <div><dt>Assinatura</dt><dd><code>/topic/ping-pong</code></dd></div>
+        <div><dt>Publicação</dt><dd><code>/app/ping-pong</code></dd></div>
+        <div><dt>Reconexão</dt><dd>Automática após 5 segundos</dd></div>
+      </dl>
+    </details>
   </main>
 </body>
 </html>

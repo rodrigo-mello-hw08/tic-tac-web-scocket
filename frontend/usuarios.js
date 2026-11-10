@@ -9,6 +9,7 @@ if (loginForm) {
   const status = document.querySelector("#connection-status");
   const error = document.querySelector("#error-message");
   const forms = [loginForm, registerForm];
+  const passwordToggles = [...document.querySelectorAll("[data-password-toggle]")];
   let pendingRequest;
   let client;
   let navigating = false;
@@ -126,6 +127,16 @@ if (loginForm) {
 
   loginTab.addEventListener("click", () => showPanel("login"));
   registerTab.addEventListener("click", () => showPanel("register"));
+  passwordToggles.forEach((button) => {
+    button.addEventListener("click", () => {
+      const input = document.getElementById(button.dataset.passwordToggle);
+      if (!input) return;
+      const revealing = input.type === "password";
+      input.type = revealing ? "text" : "password";
+      button.textContent = revealing ? "Ocultar" : "Mostrar";
+      button.setAttribute("aria-label", revealing ? "Ocultar senha" : "Mostrar senha");
+    });
+  });
 
   loginForm.addEventListener("submit", (event) => {
     event.preventDefault();

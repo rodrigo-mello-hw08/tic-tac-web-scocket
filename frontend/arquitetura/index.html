@@ -3,46 +3,334 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Arquitetura utilizada | Jogo da Velha</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="description" content="Arquitetura cliente-servidor do Jogo da Velha em tempo real com WebSocket e STOMP.">
+  <title>Arquitetura | Jogo da Velha</title>
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="style.css?v=2">
+  <script src="../shared/theme.js" defer></script>
 </head>
 <body>
-  <main class="architecture-shell">
-    <a class="back-link" href="../dashboard/index.html">← Voltar ao dashboard</a>
-    <header class="page-header">
-      <p class="eyebrow">JOGO DA VELHA</p>
-      <h1>Arquitetura utilizada</h1>
-      <p class="intro">Tecnologias utilizadas no desenvolvimento do projeto.</p>
-    </header>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
 
-    <section class="technology-card" aria-labelledby="frontend-heading">
-      <h2 id="frontend-heading">Frontend</h2>
-      <ol class="technology-list">
-        <li>HTML5</li>
-        <li>CSS3</li>
-        <li>JavaScript</li>
-        <li>STOMP.js</li>
-      </ol>
-    </section>
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="Ir para o início">
+      <span class="brand-mark" aria-hidden="true">#</span>
+      <span>Tic Tac WebSocket</span>
+    </a>
+    <nav class="header-actions" aria-label="Navegação principal">
+      <a class="back-link" href="../dashboard/index.html">Dashboard</a>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Alternar tema"></button>
+    </nav>
+  </header>
 
-    <section class="technology-card" aria-labelledby="backend-heading">
-      <h2 id="backend-heading">Backend</h2>
-      <ol class="technology-list">
-        <li>Java 21</li>
-        <li>Spring Boot</li>
-        <li>Spring WebSocket</li>
-        <li>Spring Data JPA</li>
-        <li>Hibernate</li>
-        <li>Maven</li>
+  <div class="page-grid">
+    <aside class="toc" aria-label="Nesta página">
+      <p class="toc-title">Nesta página</p>
+      <ol>
+        <li><a href="#introducao">Introdução</a></li>
+        <li><a href="#componentes">Componentes</a></li>
+        <li><a href="#roteamento">Roteamento</a></li>
+        <li><a href="#sequencia">Sequência</a></li>
+        <li><a href="#estados">Estados</a></li>
+        <li><a href="#ipc">IPC e payloads</a></li>
+        <li><a href="#backend">Camadas backend</a></li>
+        <li><a href="#tecnologias">Tecnologias</a></li>
+        <li><a href="#seguranca">Segurança</a></li>
+        <li><a href="#monitoramento">Monitoramento</a></li>
+        <li><a href="#demo">Roteiro de demo</a></li>
       </ol>
-    </section>
+    </aside>
 
-    <section class="technology-card" aria-labelledby="database-heading">
-      <h2 id="database-heading">Banco de dados</h2>
-      <ol class="technology-list">
-        <li>H2 Database</li>
-      </ol>
-    </section>
-  </main>
+    <main id="conteudo">
+      <section class="hero" id="topo" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <p class="eyebrow">DOCUMENTAÇÃO TÉCNICA · ESTADO ATUAL</p>
+          <h1 id="page-title">Arquitetura do jogo em tempo real</h1>
+          <p class="hero-lead">Uma aplicação cliente-servidor para dois jogadores, com estado autoritativo no backend e distribuição de eventos por WebSocket + STOMP.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#componentes">Explorar arquitetura</a>
+            <a class="button ghost" href="#demo">Ver roteiro de demo</a>
+          </div>
+        </div>
+        <div class="hero-terminal" aria-label="Resumo do fluxo de rede">
+          <div class="terminal-bar"><span></span><span></span><span></span><small>fluxo.stomp</small></div>
+          <code><b>CONNECT</b> ws://localhost:8080/ws</code>
+          <code><b>SUBSCRIBE</b> /topic/rooms/42</code>
+          <code><b>SEND</b> /app/rooms/move</code>
+          <code class="terminal-success"><b>MESSAGE</b> ROUND_STATE ✓</code>
+        </div>
+      </section>
+
+      <section class="doc-section introduction" id="introducao">
+        <div class="section-heading">
+          <p class="section-number">01</p>
+          <div><p class="eyebrow">INTRODUÇÃO</p><h2>Jogo da velha multiplayer em tempo real</h2></div>
+        </div>
+        <div class="introduction-grid">
+          <article class="application-summary">
+            <p class="section-intro">Esta aplicação conecta dois jogadores a uma mesma partida de jogo da velha. Cada usuário pode criar uma conta, entrar no sistema, visualizar quem está online, enviar ou aceitar um convite e jogar com o tabuleiro sincronizado nos dois navegadores.</p>
+            <p>O servidor centraliza as regras e o estado da partida. Quando um jogador realiza uma ação, o navegador envia um comando; o backend valida a jogada, atualiza os dados e publica o resultado para os clientes conectados. Assim, ambos recebem a mesma versão do tabuleiro, do turno e do placar.</p>
+            <ul class="application-features" aria-label="Principais recursos da aplicação">
+              <li><span aria-hidden="true">01</span><div><strong>Usuários e presença</strong><small>Cadastro, login, sessão e lista de jogadores online.</small></div></li>
+              <li><span aria-hidden="true">02</span><div><strong>Convites e salas</strong><small>Envio, aceite ou recusa de convites para iniciar uma partida.</small></div></li>
+              <li><span aria-hidden="true">03</span><div><strong>Partida sincronizada</strong><small>Turnos, jogadas, resultados e placar distribuídos em tempo real.</small></div></li>
+              <li><span aria-hidden="true">04</span><div><strong>Histórico</strong><small>Consulta dos resultados das salas finalizadas pelo jogador.</small></div></li>
+            </ul>
+          </article>
+
+          <aside class="stack-summary" aria-labelledby="stack-summary-title">
+            <p class="eyebrow">TECNOLOGIAS UTILIZADAS</p>
+            <h3 id="stack-summary-title">A base da solução</h3>
+            <dl>
+              <div><dt>Cliente</dt><dd>HTML5, CSS3, JavaScript e STOMP.js</dd></div>
+              <div><dt>Comunicação</dt><dd>WebSocket, STOMP e payloads JSON</dd></div>
+              <div><dt>Servidor</dt><dd>Java 21, Spring Boot e Spring WebSocket</dd></div>
+              <div><dt>Persistência</dt><dd>Spring Data JPA, Hibernate e H2</dd></div>
+              <div><dt>Build</dt><dd>Maven e Lombok</dd></div>
+            </dl>
+          </aside>
+        </div>
+
+        <div class="experience-flow" aria-label="Jornada principal do usuário">
+          <div><span>1</span><strong>Entrar</strong><small>Autenticação</small></div><i aria-hidden="true">→</i>
+          <div><span>2</span><strong>Encontrar</strong><small>Presença online</small></div><i aria-hidden="true">→</i>
+          <div><span>3</span><strong>Convidar</strong><small>Criação da sala</small></div><i aria-hidden="true">→</i>
+          <div><span>4</span><strong>Jogar</strong><small>Estado sincronizado</small></div><i aria-hidden="true">→</i>
+          <div><span>5</span><strong>Consultar</strong><small>Histórico</small></div>
+        </div>
+      </section>
+
+      <section class="doc-section" id="componentes">
+        <div class="section-heading"><p class="section-number">02</p><div><p class="eyebrow">TOPOLOGIA</p><h2>Diagrama de componentes</h2></div></div>
+        <p class="section-intro">A comunicação de negócio passa por uma única conexão bidirecional. O broker interno separa destinos de entrada da aplicação e canais de saída.</p>
+        <div class="component-diagram" role="img" aria-label="Dois navegadores enviam comandos STOMP ao Spring Boot; controllers e serviços processam e persistem dados, enquanto o broker publica eventos de volta aos clientes inscritos">
+          <div class="diagram-clients">
+            <article class="node browser"><span class="node-icon">A</span><small>CLIENTE</small><strong>Navegador A</strong><em>HTML · CSS · JavaScript · STOMP.js</em></article>
+            <article class="node browser"><span class="node-icon">B</span><small>CLIENTE</small><strong>Navegador B</strong><em>HTML · CSS · JavaScript · STOMP.js</em></article>
+          </div>
+          <div class="connector vertical bidirectional"><span><b>SEND ↓</b> comandos · <b>MESSAGE ↑</b> eventos</span></div>
+          <div class="backend-boundary">
+            <p class="boundary-label">PROCESSO SPRING BOOT · :8080</p>
+            <article class="node network-entry"><small>CONEXÃO</small><strong><code>/ws</code></strong><em>Upgrade HTTP → WebSocket → STOMP</em></article>
+            <div class="message-flows">
+              <section class="flow-card inbound-flow" aria-label="Fluxo de entrada dos comandos">
+                <h3><span>01</span> Entrada de comandos</h3>
+                <p>Frames <code>SEND</code> enviados pelos clientes.</p>
+                <div class="flow-chain">
+                  <article class="node accent"><small>DESTINO</small><strong><code>/app/...</code></strong><em>Comandos</em></article>
+                  <div class="arrow" aria-hidden="true">→</div>
+                  <article class="node"><small>ENTRADA</small><strong>Controllers</strong><em><code>@MessageMapping</code></em></article>
+                  <div class="arrow" aria-hidden="true">→</div>
+                  <article class="node wide"><small>DOMÍNIO</small><strong>Services + Validators</strong><em>Regras e casos de uso</em></article>
+                  <div class="arrow" aria-hidden="true">→</div>
+                  <article class="node"><small>DADOS</small><strong>Repositories</strong><em>Spring Data JPA</em></article>
+                  <div class="arrow" aria-hidden="true">→</div>
+                  <article class="node database"><small>MEMÓRIA</small><strong>H2</strong><em><code>ticdb</code></em></article>
+                </div>
+              </section>
+              <section class="flow-card outbound-flow" aria-label="Fluxo de saída dos eventos">
+                <h3><span>02</span> Saída de eventos</h3>
+                <p>Resultados publicados para todos os clientes inscritos no destino correto.</p>
+                <div class="flow-chain outbound-chain">
+                  <article class="node"><small>ORIGEM</small><strong>Controllers / Services</strong><em><code>SimpMessagingTemplate</code></em></article>
+                  <div class="arrow" aria-hidden="true">→</div>
+                  <article class="node accent"><small>ROTEAMENTO</small><strong>Broker STOMP</strong><em>Broker simples em memória</em></article>
+                  <div class="arrow" aria-hidden="true">→</div>
+                  <article class="node"><small>DESTINOS</small><strong><code>/topic</code> · <code>/queue</code></strong><em>Broadcast e mensagens privadas</em></article>
+                  <div class="arrow return-arrow" aria-hidden="true">↗</div>
+                  <article class="node subscribers"><small>ENTREGA</small><strong>Clientes inscritos</strong><em>Frames <code>MESSAGE</code></em></article>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+        <p class="diagram-note">O <code>PresenceService</code> também mantém sessões e tokens de transição em mapas concorrentes na memória do processo.</p>
+      </section>
+
+      <section class="doc-section" id="roteamento">
+        <div class="section-heading"><p class="section-number">03</p><div><p class="eyebrow">DESTINOS STOMP</p><h2>Roteamento de mensagens</h2></div></div>
+        <aside class="stomp-explainer">
+          <div><p class="eyebrow">O QUE É STOMP?</p><h3>Uma convenção de mensagens sobre o WebSocket</h3></div>
+          <p><strong>STOMP</strong> significa <em>Simple Text Oriented Messaging Protocol</em>. O WebSocket mantém o canal bidirecional aberto; o STOMP organiza as mensagens desse canal em frames e destinos; o JSON transporta os dados da aplicação.</p>
+          <dl><div><dt><code>CONNECT</code></dt><dd>inicia a sessão</dd></div><div><dt><code>SUBSCRIBE</code></dt><dd>assina um destino</dd></div><div><dt><code>SEND</code></dt><dd>publica um comando</dd></div><div><dt><code>MESSAGE</code></dt><dd>entrega um evento</dd></div></dl>
+        </aside>
+        <div class="route-strip" aria-label="Fluxo dos prefixos de roteamento">
+          <div><code>/ws</code><small>conectar</small></div><i>→</i><div><code>/app</code><small>comandos</small></div><i>→</i><div><code>/topic</code><small>broadcast</small></div><i>+</i><div><code>/queue</code><small>resposta privada</small></div>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Prefixo</th><th>Papel real</th><th>Exemplos existentes</th></tr></thead>
+          <tbody>
+            <tr><td><code>/ws</code></td><td>Endpoint do handshake e upgrade para WebSocket.</td><td><code>ws://localhost:8080/ws</code></td></tr>
+            <tr><td><code>/app</code></td><td>Encaminha comandos do cliente para métodos com <code>@MessageMapping</code>.</td><td><code>/app/users/session</code>, <code>/app/invites/send</code>, <code>/app/rooms/move</code>, <code>/app/history/list</code></td></tr>
+            <tr><td><code>/topic</code></td><td>Eventos compartilhados com todos os inscritos naquele assunto.</td><td><code>/topic/users/active</code>, <code>/topic/players/{id}</code>, <code>/topic/rooms/{id}</code>, <code>/topic/ping-pong</code></td></tr>
+            <tr><td><code>/queue</code></td><td>Fila habilitada no broker; combinada com <code>/user</code> para respostas da sessão atual.</td><td><code>/user/queue/users</code></td></tr>
+          </tbody>
+        </table></div>
+        <p class="footnote"><strong>Importante:</strong> <code>/user</code> é o destino resolvido pelo Spring para mensagens privadas; o cliente assina <code>/user/queue/users</code>, enquanto o controller usa <code>@SendToUser("/queue/users")</code>.</p>
+      </section>
+
+      <section class="doc-section" id="sequencia">
+        <div class="section-heading"><p class="section-number">04</p><div><p class="eyebrow">FLUXO PRINCIPAL</p><h2>Diagrama de sequência</h2></div></div>
+        <p class="section-intro">Exemplo real: autenticação da tela de jogo e uma jogada válida. As linhas horizontais representam mensagens; o tempo avança para baixo.</p>
+        <div class="sequence" role="img" aria-label="Sequência de conexão, autenticação, inscrição, jogada, validação, persistência e publicação do estado">
+          <div class="sequence-head"><b>Cliente A</b><b>Broker / Controllers</b><b>Serviço / H2</b><b>Cliente B</b></div>
+          <ol>
+            <li class="a-to-server"><span>1</span><code>CONNECT /ws</code><i>→</i></li>
+            <li class="server-to-a"><span>2</span><code>CONNECTED</code><i>←</i></li>
+            <li class="a-to-server"><span>3</span><code>SUBSCRIBE /user/queue/users</code><i>→</i></li>
+            <li class="a-to-server"><span>4</span><code>SEND /app/users/session</code><i>→</i></li>
+            <li class="server-to-domain"><span>5</span><code>consume token + vincula sessionId</code><i>→</i></li>
+            <li class="server-to-a"><span>6</span><code>LOGGED_IN + novo token</code><i>←</i></li>
+            <li class="both-subscribe"><span>7</span><code>SUBSCRIBE /topic/rooms/42</code><i>↔</i></li>
+            <li class="a-to-server"><span>8</span><code>SEND /app/rooms/move {roomId, cellIndex}</code><i>→</i></li>
+            <li class="server-to-domain"><span>9</span><code>valida turno + atualiza Board + save(Room)</code><i>→</i></li>
+            <li class="broadcast"><span>10</span><code>MESSAGE ROUND_STATE</code><i>← broadcast →</i></li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="doc-section" id="estados">
+        <div class="section-heading"><p class="section-number">05</p><div><p class="eyebrow">CICLO DA PARTIDA</p><h2>Diagrama de estados</h2></div></div>
+        <div class="state-diagram" role="img" aria-label="Estados desde usuários online até convite, sala, partida ativa, rodada finalizada e sala encerrada">
+          <div class="state start">Usuários online</div><div class="state-arrow"><span>enviar convite</span>↓</div>
+          <div class="state">Convite pendente</div>
+          <div class="state-branches">
+            <div><span>recusar</span><div class="state muted">Convite recusado</div><i>↩ lista online</i></div>
+            <div><span>aceitar</span><div class="state accent">Sala criada</div><i>↓ MATCH_STARTED</i></div>
+          </div>
+          <div class="state active">Partida <code>ACTIVE</code><small>turnos X / O</small></div>
+          <div class="state-branches triple">
+            <div><span>jogada sem fim</span><div class="state">ROUND_STATE</div><i>↩ próximo turno</i></div>
+            <div><span>vitória ou empate</span><div class="state">Partida <code>FINISHED</code></div><i>↓ nova partida automática</i></div>
+            <div><span>desistir</span><div class="state">ROOM_RESULT</div><i>↓ nova partida</i></div>
+          </div>
+          <div class="state end">Sala encerrada <small><code>closed = true</code> · entra no histórico</small></div>
+        </div>
+        <p class="diagram-note">No código atual, vitória e empate criam imediatamente a próxima partida com símbolos alternados. “Desistir” concede um ponto e abre outra partida; “encerrar sala” concede um ponto e marca a sala como fechada.</p>
+      </section>
+
+      <section class="doc-section" id="ipc">
+        <div class="section-heading"><p class="section-number">06</p><div><p class="eyebrow">COMUNICAÇÃO ENTRE PROCESSOS</p><h2>IPC, protocolos e contratos</h2></div></div>
+        <div class="protocol-stack">
+          <article><span>5</span><div><strong>JSON</strong><p>Serialização das cargas úteis e do envelope de eventos.</p></div></article>
+          <article><span>4</span><div><strong>STOMP</strong><p>Frames <code>CONNECT</code>, <code>SUBSCRIBE</code>, <code>SEND</code> e <code>MESSAGE</code>; destinos desacoplam produtores e consumidores.</p></div></article>
+          <article><span>3</span><div><strong>WebSocket</strong><p>Canal full-duplex persistente entre navegador e servidor.</p></div></article>
+          <article><span>2</span><div><strong>Upgrade HTTP</strong><p>Negociação inicial em <code>/ws</code>, trocando HTTP pelo protocolo WebSocket.</p></div></article>
+          <article><span>1</span><div><strong>TCP/IP</strong><p>Entrega ordenada e confiável dos bytes entre processos.</p></div></article>
+        </div>
+        <div class="payload-grid">
+          <article class="code-card"><div class="code-title"><span>Comando real</span><code>/app/rooms/move</code></div><pre><code>{
+  "roomId": 42,
+  "cellIndex": 4
+}</code></pre><p>O índice aceito vai de <code>0</code> a <code>8</code>.</p></article>
+          <article class="code-card"><div class="code-title"><span>Evento real</span><code>/topic/rooms/42</code></div><pre><code>{
+  "type": "ROUND_STATE",
+  "data": {
+    "roomId": 42,
+    "match": {
+      "matchId": 9,
+      "roomId": 42,
+      "playerA": { "id": 1, "login": "ana" },
+      "playerB": { "id": 2, "login": "bia" },
+      "scoreA": 0,
+      "scoreB": 0,
+      "status": "ACTIVE",
+      "boardId": 7,
+      "moves": 1,
+      "cells": ["", "", "", "", "X", "", "", "", ""],
+      "symbolA": "X",
+      "symbolB": "O"
+    },
+    "nextPlayerId": 2,
+    "result": null,
+    "winnerPlayerId": null,
+    "nextMatch": null
+  },
+  "error": null
+}</code></pre></article>
+          <article class="code-card"><div class="code-title"><span>Envelope de erro</span><code>/topic/players/1</code></div><pre><code>{
+  "type": "ERROR",
+  "data": null,
+  "error": "Não é seu turno."
+}</code></pre><p>O contrato Java é sempre <code>{type, data, error}</code>.</p></article>
+          <article class="code-card"><div class="code-title"><span>Sessão real</span><code>/user/queue/users</code></div><pre><code>{
+  "type": "LOGGED_IN",
+  "data": {
+    "id": 1,
+    "login": "ana",
+    "sessionToken": "&lt;UUID de uso único&gt;"
+  },
+  "error": null
+}</code></pre><p>O token expira em 60 segundos e é consumido ao trocar de página/conexão.</p></article>
+        </div>
+      </section>
+
+      <section class="doc-section" id="backend">
+        <div class="section-heading"><p class="section-number">07</p><div><p class="eyebrow">ORGANIZAÇÃO INTERNA</p><h2>Camadas do backend</h2></div></div>
+        <div class="layers">
+          <article><span>01</span><div><h3>Configuração e transporte</h3><p><code>WebSocketConfig</code> registra <code>/ws</code>, o broker simples e os prefixos. <code>WebSocketExceptionHandler</code> converte regras inválidas em eventos de erro.</p></div></article>
+          <article><span>02</span><div><h3>Controllers WebSocket</h3><p><code>User</code>, <code>Invite</code>, <code>Game</code>, <code>History</code> e <code>ConnectionTest</code> recebem comandos STOMP e escolhem destinos de resposta.</p></div></article>
+          <article><span>03</span><div><h3>Serviços e regras</h3><p><code>PresenceService</code>, <code>InviteService</code>, <code>RoomService</code> e <code>PlayerService</code> coordenam os casos de uso; validators protegem invariantes.</p></div></article>
+          <article><span>04</span><div><h3>Mapeamento e contratos</h3><p><code>GameMessageMapper</code> transforma entidades em views. Records em <code>GameMessages</code> definem requests, views, estados e o envelope.</p></div></article>
+          <article><span>05</span><div><h3>Persistência</h3><p>Repositories JPA acessam <code>Player</code>, <code>Invite</code>, <code>Room</code>, <code>Match</code> e <code>Board</code> no H2 em memória.</p></div></article>
+        </div>
+      </section>
+
+      <section class="doc-section" id="tecnologias">
+        <div class="section-heading"><p class="section-number">08</p><div><p class="eyebrow">DECISÕES</p><h2>Tecnologias e justificativas</h2></div></div>
+        <div class="tech-grid">
+          <article><b>HTML5 + CSS3</b><p>Interface pública, sem etapa de build, com semântica, responsividade e tema por variáveis CSS.</p></article>
+          <article><b>JavaScript</b><p>Atualiza telas por eventos e mantém sessão de navegação em <code>sessionStorage</code>.</p></article>
+          <article><b>STOMP.js</b><p>Fornece cliente STOMP no navegador e abstrai frames, destinos, inscrições e publicação.</p></article>
+          <article><b>Java 21</b><p>Base tipada para domínio, records de mensagens e execução no ecossistema Spring.</p></article>
+          <article><b>Spring Boot 4.1.2</b><p>Configuração integrada da aplicação e gerenciamento dos componentes.</p></article>
+          <article><b>Spring WebSocket</b><p>Roteamento STOMP declarativo com <code>@MessageMapping</code>, broker simples e mensagens por usuário.</p></article>
+          <article><b>Spring Data JPA + Hibernate</b><p>Repositories e transações reduzem código de acesso e preservam o modelo relacional.</p></article>
+          <article><b>H2 em memória</b><p>Adequado à demonstração local e reinício limpo; não oferece persistência após encerrar o servidor.</p></article>
+          <article><b>Maven + Lombok</b><p>Maven gerencia build/dependências; Lombok reduz código repetitivo de construção e injeção.</p></article>
+        </div>
+      </section>
+
+      <section class="doc-section" id="seguranca">
+        <div class="section-heading"><p class="section-number">09</p><div><p class="eyebrow">POSTURA ATUAL</p><h2>Segurança implementada</h2></div></div>
+        <div class="security-grid">
+          <article class="security-card implemented"><div class="status-label">Controles presentes no código</div><ul>
+            <li>Operações protegidas verificam o <code>sessionId</code> autenticado.</li>
+            <li>Token UUID de transição, uso único, mantido no servidor e com TTL de 60 s.</li>
+            <li>Identidade da jogada vem da sessão, não do payload do cliente.</li>
+            <li>Validação de participação na sala, turno, índice e ocupação da casa.</li>
+            <li>Mensagens privadas são direcionadas à fila do usuário autenticado.</li>
+            <li>Erros de regra retornam sem expor entidades completas ou stack trace ao cliente.</li>
+          </ul></article>
+        </div>
+      </section>
+
+      <section class="doc-section" id="monitoramento">
+        <div class="section-heading"><p class="section-number">10</p><div><p class="eyebrow">OBSERVABILIDADE</p><h2>Monitoramento e depuração</h2></div></div>
+        <div class="monitor-grid">
+          <article><span class="status-tag current">Disponível</span><h3>Teste de conexão</h3><p>Publicar <code>{"message":"ping"}</code> em <code>/app/ping-pong</code> e observar <code>PONG</code> em <code>/topic/ping-pong</code>.</p></article>
+          <article><span class="status-tag current">Disponível</span><h3>DevTools do navegador</h3><p>Na aba Network → WS, inspecionar handshake, frames STOMP, destinos, payloads JSON e fechamento da conexão.</p></article>
+          <article><span class="status-tag current">Disponível</span><h3>Estado de desenvolvimento</h3><p>O H2 Console está habilitado em <code>/h2-console</code>; use <code>jdbc:h2:mem:ticdb</code> enquanto o backend estiver ativo.</p></article>
+          <article><span class="status-tag external">Ferramenta externa</span><h3>Wireshark</h3><p>Filtrar <code>tcp.port == 8080</code> para estudar TCP, upgrade e frames.</p></article>
+        </div>
+        <div class="debug-steps"><h3>Checklist de diagnóstico</h3><ol><li>Confirmar backend na porta <code>8080</code>.</li><li>Verificar resposta <code>101 Switching Protocols</code> em <code>/ws</code>.</li><li>Confirmar frame STOMP <code>CONNECTED</code>.</li><li>Validar inscrições antes de publicar comandos.</li><li>Comparar o destino e o JSON com os contratos desta página.</li><li>Inspecionar <code>ERROR</code>, fechamento do socket e estado no H2.</li></ol></div>
+      </section>
+
+      <section class="doc-section" id="demo">
+        <div class="section-heading"><p class="section-number">11</p><div><p class="eyebrow">APRESENTAÇÃO</p><h2>Roteiro de demonstração</h2></div></div>
+        <ol class="demo-timeline">
+          <li><span>01</span><div><h3>Preparar dois clientes</h3><p>Inicie o backend e abra a aplicação em dois navegadores ou perfis distintos.</p></div></li>
+          <li><span>02</span><div><h3>Cadastro e login</h3><p>Cadastre dois usuários, autentique ambos e mostre a atualização da lista de online.</p></div></li>
+          <li><span>03</span><div><h3>Convite</h3><p>Envie um convite, recuse uma vez; envie novamente e aceite para criar a sala.</p></div></li>
+          <li><span>04</span><div><h3>Partida sincronizada</h3><p>Jogue alternando janelas e destaque o mesmo <code>ROUND_STATE</code> chegando aos dois clientes.</p></div></li>
+          <li><span>05</span><div><h3>Regras no servidor</h3><p>Mostre que turno incorreto ou casa ocupada gera <code>ERROR</code> sem alterar o tabuleiro.</p></div></li>
+          <li><span>06</span><div><h3>Finalização</h3><p>Conclua uma rodada, observe a alternância de símbolos, encerre a sala e confira o histórico.</p></div></li>
+          <li><span>07</span><div><h3>Comunicação de rede</h3><p>Abra os frames WS no DevTools e encerre relacionando WebSocket, STOMP, destinos e payloads JSON observados.</p></div></li>
+        </ol>
+      </section>
+
+      <footer class="page-footer"><p>Arquitetura documentada a partir do código-fonte e do escopo do Capstone.</p><a href="#topo">Voltar ao topo ↑</a></footer>
+    </main>
+  </div>
 </body>
 </html>

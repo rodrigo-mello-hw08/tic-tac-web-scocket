@@ -6,75 +6,107 @@ if (connectButton) {
   const disconnectButton = document.querySelector("#disconnect-button");
   const connectionStatus = document.querySelector("#connection-status");
   const statusDot = document.querySelector("#status-dot");
+  const statusRow = statusDot.closest(".status-row");
   const errorMessage = document.querySelector("#error-message");
+  const latencyValue = document.querySelector("#latency-value");
+  const responseTime = document.querySelector("#response-time");
+  const responseValue = document.querySelector("#response-value");
   let subscription;
+  let pingStartedAt;
+  let manualDisconnect = false;
+
+  function setStatus(label, state = "idle") {
+    connectionStatus.textContent = label;
+    statusRow.dataset.state = state;
+    statusDot.classList.toggle("connected", state === "connected");
+  }
+
+  function showError(message) {
+    errorMessage.textContent = message;
+    errorMessage.hidden = false;
+    setStatus("Falha na conexão", "error");
+  }
+
+  function resetControls() {
+    connectButton.disabled = false;
+    disconnectButton.disabled = true;
+    subscribeButton.disabled = true;
+    pingButton.disabled = true;
+    subscription = undefined;
+  }
 
   const client = new StompJs.Client({
     brokerURL: "ws://localhost:8080/ws",
     reconnectDelay: 5000,
     onConnect: () => {
-      connectionStatus.textContent = "Conectado";
-      statusDot.classList.add("connected");
+      manualDisconnect = false;
+      setStatus("Conectado", "connected");
       connectButton.disabled = true;
       disconnectButton.disabled = false;
       subscribeButton.disabled = false;
       errorMessage.hidden = true;
     },
     onWebSocketClose: () => {
-      connectionStatus.textContent = "Desconectado";
-      statusDot.classList.remove("connected");
-      connectButton.disabled = false;
-      disconnectButton.disabled = true;
-      subscribeButton.disabled = true;
-      pingButton.disabled = true;
-      subscription = undefined;
+      resetControls();
+      setStatus(manualDisconnect ? "Desconectado" : "Conexão interrompida", manualDisconnect ? "idle" : "error");
     },
-    onStompError: (frame) => {
-      errorMessage.textContent = frame.headers.message || "O servidor recusou a conexão STOMP.";
-      errorMessage.hidden = false;
-    },
-    onWebSocketError: () => {
-      errorMessage.textContent = "Não foi possível conectar. Verifique se o backend está ativo em localhost:8080.";
-      errorMessage.hidden = false;
-    },
+    onStompError: (frame) => showError(frame.headers.message || "O servidor recusou a conexão STOMP."),
+    onWebSocketError: () => showError("Não foi possível conectar. Verifique se o backend está ativo em localhost:8080."),
   });
 
   connectButton.addEventListener("click", () => {
     errorMessage.hidden = true;
-    connectionStatus.textContent = "Conectando…";
+    manualDisconnect = false;
+    setStatus("Conectando…", "connecting");
     connectButton.disabled = true;
     client.activate();
   });
 
   disconnectButton.addEventListener("click", async () => {
+    manualDisconnect = true;
     disconnectButton.disabled = true;
-    connectionStatus.textContent = "Desconectando…";
+    setStatus("Desconectando…", "connecting");
     subscription?.unsubscribe();
     subscription = undefined;
     await client.deactivate();
-    connectionStatus.textContent = "Desconectado";
-    statusDot.classList.remove("connected");
-    connectButton.disabled = false;
-    subscribeButton.disabled = true;
-    pingButton.disabled = true;
+    resetControls();
+    setStatus("Desconectado");
   });
 
   subscribeButton.addEventListener("click", () => {
     if (!client.connected || subscription) return;
 
     subscription = client.subscribe("/topic/ping-pong", (message) => {
-      const event = JSON.parse(message.body);
-      const received = event.data?.message ?? event.error ?? message.body;
-      window.alert(received);
+      let received;
+      try {
+        const event = JSON.parse(message.body);
+        received = event.data?.message ?? event.error ?? message.body;
+      } catch {
+        received = message.body;
+      }
+
+      const now = performance.now();
+      responseValue.textContent = String(received);
+      responseTime.textContent = new Intl.DateTimeFormat("pt-BR", {
+        hour: "2-digit", minute: "2-digit", second: "2-digit",
+      }).format(new Date());
+      latencyValue.textContent = pingStartedAt == null ? "—" : `${Math.max(0, Math.round(now - pingStartedAt))} ms`;
+      pingStartedAt = undefined;
+      setStatus("Resposta recebida", "connected");
+      window.alert(String(received));
     });
     subscribeButton.disabled = true;
     pingButton.disabled = false;
-    connectionStatus.textContent = "Conectado e pronto para jogar";
+    setStatus("Conectado e pronto", "connected");
   });
 
   pingButton.addEventListener("click", () => {
     if (!client.connected || !subscription) return;
 
+    pingStartedAt = performance.now();
+    responseValue.textContent = "Aguardando resposta…";
+    latencyValue.textContent = "Calculando…";
+    setStatus("Ping enviado", "connected");
     client.publish({
       destination: "/app/ping-pong",
       headers: { "content-type": "application/json" },

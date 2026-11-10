@@ -3,49 +3,84 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Jogo da velha online para dois jogadores, com convites e partidas em tempo real.">
   <title>Jogo da Velha | Acesso</title>
+  <script src="shared/theme.js"></script>
+  <link rel="stylesheet" href="shared/theme.css">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.1.1/bundles/stomp.umd.min.js" defer></script>
   <script src="usuarios.js" defer></script>
 </head>
 <body>
-  <main class="card home-card auth-card">
-    <p class="eyebrow">JOGO DA VELHA</p>
-    <h1>Bem-vindo</h1>
-    <p class="description">Entre ou crie uma conta para ver quem está online.</p>
-
-    <div class="auth-tabs" role="tablist" aria-label="Acesso à conta">
-      <button class="auth-tab active" id="login-tab" type="button" role="tab"
-              aria-selected="true" aria-controls="login-panel">Login</button>
-      <button class="auth-tab" id="register-tab" type="button" role="tab"
-              aria-selected="false" aria-controls="register-panel">Cadastro</button>
+  <a class="skip-link" href="#access">Pular para o acesso</a>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Jogo da Velha — início"><span class="brand-mark" aria-hidden="true">×○</span><span>Tic Tac Toe</span></a>
+    <div class="header-actions">
+      <a class="architecture-link" href="arquitetura/index.html">Arquitetura</a>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Alternar tema"></button>
     </div>
+  </header>
 
-    <section id="login-panel" role="tabpanel" aria-labelledby="login-tab">
-      <form id="login-form" class="auth-form">
-        <label for="login-username">Login</label>
-        <input id="login-username" name="login" autocomplete="username" required>
-        <label for="login-password">Senha</label>
-        <input id="login-password" name="password" type="password" autocomplete="current-password" required>
-        <button class="button primary" type="submit">Entrar</button>
-      </form>
+  <main class="access-layout" id="access">
+    <section class="hero-panel" aria-labelledby="hero-heading">
+      <p class="eyebrow">JOGO DA VELHA EM TEMPO REAL</p>
+      <h1 id="hero-heading">Sua próxima partida começa aqui.</h1>
+      <p class="hero-copy">Encontre quem está online, envie um convite e acompanhe cada jogada sincronizada pelo servidor.</p>
+      <div class="feature-list" aria-label="Recursos do jogo">
+        <span><i aria-hidden="true"></i> Presença em tempo real</span>
+        <span><i aria-hidden="true"></i> Convites instantâneos</span>
+        <span><i aria-hidden="true"></i> Placar sincronizado</span>
+      </div>
+      <div class="decorative-board" aria-hidden="true">
+        <span>×</span><span></span><span>○</span><span></span><span>×</span><span></span><span>○</span><span></span><span>×</span>
+      </div>
     </section>
 
-    <section id="register-panel" role="tabpanel" aria-labelledby="register-tab" hidden>
-      <form id="register-form" class="auth-form">
-        <label for="register-username">Login</label>
-        <input id="register-username" name="login" autocomplete="username" required>
-        <label for="register-password">Senha</label>
-        <input id="register-password" name="password" type="password" autocomplete="new-password" required>
-        <label for="register-password-repeat">Repetir senha</label>
-        <input id="register-password-repeat" name="passwordRepeat" type="password" autocomplete="new-password" required>
-        <button class="button primary" type="submit">Criar conta</button>
-      </form>
-    </section>
+    <section class="auth-card surface-card" aria-labelledby="auth-heading">
+      <p class="eyebrow">ÁREA DO JOGADOR</p>
+      <h2 id="auth-heading">Bem-vindo</h2>
+      <p class="description">Entre ou crie uma conta para desafiar outro jogador.</p>
 
-    <p class="connection-status" id="connection-status" aria-live="polite"></p>
-    <p class="error-message" id="error-message" role="alert" hidden></p>
-    <a class="secondary-link" href="conexao/ping-pong.html">Testar conexão com servidor</a>
+      <div class="auth-tabs" role="tablist" aria-label="Acesso à conta">
+        <button class="auth-tab active" id="login-tab" type="button" role="tab" aria-selected="true" aria-controls="login-panel">Login</button>
+        <button class="auth-tab" id="register-tab" type="button" role="tab" aria-selected="false" aria-controls="register-panel">Cadastro</button>
+      </div>
+
+      <section id="login-panel" role="tabpanel" aria-labelledby="login-tab">
+        <form id="login-form" class="auth-form">
+          <label for="login-username">Login</label>
+          <input id="login-username" name="login" autocomplete="username" required>
+          <label for="login-password">Senha</label>
+          <div class="password-field">
+            <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+            <button class="password-toggle" type="button" data-password-toggle="login-password" aria-label="Mostrar senha">Mostrar</button>
+          </div>
+          <button class="button primary" type="submit">Entrar</button>
+        </form>
+      </section>
+
+      <section id="register-panel" role="tabpanel" aria-labelledby="register-tab" hidden>
+        <form id="register-form" class="auth-form">
+          <label for="register-username">Login</label>
+          <input id="register-username" name="login" autocomplete="username" required>
+          <label for="register-password">Senha</label>
+          <div class="password-field">
+            <input id="register-password" name="password" type="password" autocomplete="new-password" required>
+            <button class="password-toggle" type="button" data-password-toggle="register-password" aria-label="Mostrar senha">Mostrar</button>
+          </div>
+          <label for="register-password-repeat">Repetir senha</label>
+          <div class="password-field">
+            <input id="register-password-repeat" name="passwordRepeat" type="password" autocomplete="new-password" required>
+            <button class="password-toggle" type="button" data-password-toggle="register-password-repeat" aria-label="Mostrar senha repetida">Mostrar</button>
+          </div>
+          <button class="button primary" type="submit">Criar conta</button>
+        </form>
+      </section>
+
+      <p class="connection-status" id="connection-status" aria-live="polite"></p>
+      <p class="error-message" id="error-message" role="alert" hidden></p>
+      <a class="secondary-link" href="conexao/ping-pong.html">Diagnosticar conexão com o servidor →</a>
+    </section>
   </main>
 </body>
 </html>

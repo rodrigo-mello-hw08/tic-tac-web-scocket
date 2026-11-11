@@ -4,58 +4,57 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dashboard | Jogo da Velha</title>
+  <script src="../shared/theme.js"></script>
+  <link rel="stylesheet" href="../shared/theme.css">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.1.1/bundles/stomp.umd.min.js" defer></script>
   <script src="script.js" defer></script>
 </head>
 <body>
-  <main class="dashboard-shell">
+  <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
+  <main class="dashboard-shell" id="main-content">
     <header class="dashboard-header">
-      <div>
-        <p class="eyebrow">JOGO DA VELHA</p>
-        <h1>Dashboard</h1>
-      </div>
-      <button class="button secondary" id="logout-button" type="button" disabled>Sair</button>
+      <a class="brand" href="../index.html" aria-label="Jogo da Velha — início"><span class="brand-mark" aria-hidden="true">×○</span><span>Tic Tac Toe</span></a>
+      <nav class="header-actions" aria-label="Ações da conta">
+        <a class="architecture-link" href="../arquitetura/index.html">Arquitetura</a>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Alternar tema"></button>
+        <button class="button ghost" id="logout-button" type="button" disabled>Sair</button>
+      </nav>
     </header>
 
-    <section class="welcome-card" aria-live="polite">
-      <div class="status-indicator" id="connection-indicator"></div>
-      <div>
-        <p class="muted" id="connection-status">Conectando ao servidor…</p>
-        <h2>Olá, <span id="current-login">…</span></h2>
+    <section class="welcome-card surface-card" aria-live="polite">
+      <div class="player-avatar" id="current-avatar" aria-hidden="true">…</div>
+      <div class="welcome-copy">
+        <p class="eyebrow">SALA DE ESPERA</p>
+        <h1>Olá, <span id="current-login">…</span></h1>
+        <p class="connection-line"><span class="status-dot" id="connection-indicator"></span><span id="connection-status">Conectando ao servidor…</span></p>
       </div>
+      <p class="welcome-hint">Escolha um jogador online e envie um desafio.</p>
     </section>
 
-    <section class="presence-card" aria-labelledby="presence-heading">
-      <div class="section-heading presence-heading">
-        <div><p class="eyebrow">PRESENÇA</p><h2 id="presence-heading">Jogadores</h2></div>
-      </div>
+    <section class="presence-card surface-card" aria-labelledby="presence-heading">
+      <div class="section-heading"><div><p class="eyebrow">PRESENÇA EM TEMPO REAL</p><h2 id="presence-heading">Jogadores e convites</h2></div></div>
       <div class="presence-columns">
         <section class="presence-column" aria-labelledby="users-heading">
-          <div class="column-heading"><h3 id="users-heading">Usuários ativos</h3><span class="user-count" id="user-count">0</span></div>
+          <div class="column-heading"><h3 id="users-heading">Usuários ativos</h3><span class="count-badge" id="user-count" aria-label="Quantidade de usuários ativos">0</span></div>
           <ul class="user-list" id="user-list" aria-live="polite"><li class="empty-state">Carregando usuários…</li></ul>
         </section>
         <section class="presence-column" aria-labelledby="invites-heading">
-          <div class="column-heading"><h3 id="invites-heading">Convites pendentes</h3><span class="user-count" id="invite-count">0</span></div>
+          <div class="column-heading"><h3 id="invites-heading">Convites recebidos</h3><span class="count-badge" id="invite-count" aria-label="Quantidade de convites pendentes">0</span></div>
           <ul class="invite-list" id="invite-list" aria-live="polite"><li class="empty-state">Nenhum convite pendente.</li></ul>
         </section>
       </div>
     </section>
 
-    <section class="history-card" aria-labelledby="history-heading">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">HISTÓRICO DE PARTIDAS</p>
-          <h2 id="history-heading">Histórico de partidas</h2>
-        </div>
-      </div>
+    <section class="history-card surface-card" aria-labelledby="history-heading">
+      <div class="section-heading"><div><p class="eyebrow">RESULTADOS</p><h2 id="history-heading">Histórico de partidas</h2></div></div>
       <ul class="history-list" id="history-list" aria-live="polite"><li class="empty-state">Carregando histórico…</li></ul>
     </section>
     <p class="error-message" id="error-message" role="alert" hidden></p>
   </main>
   <footer class="dashboard-footer">
-    <p class="footer-authors">Desenvolvido por Rodrigo Mello, Pedro Goularte, Gabriel Guerra e Marcello Bonvicini</p>
-    <a class="architecture-link" href="../arquitetura/index.html">Arquitetura utilizada</a>
+    <p>Desenvolvido por Rodrigo Mello, Pedro Goularte, Gabriel Guerra e Marcello Bonvicini</p>
+    <a href="../conexao/ping-pong.html">Diagnóstico da conexão</a>
   </footer>
 </body>
 </html>

@@ -3,32 +3,67 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
   <title>Tabuleiro | Jogo da Velha</title>
+  <link rel="stylesheet" href="../shared/theme.css">
   <link rel="stylesheet" href="style.css">
+  <script src="../shared/theme.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.1.1/bundles/stomp.umd.min.js" defer></script>
   <script src="script.js" defer></script>
 </head>
 <body>
-  <main class="game-shell">
+  <a class="skip-link" href="#game-board">Pular para o tabuleiro</a>
+  <main class="game-shell surface-card">
     <header class="game-header">
       <div><p class="eyebrow">JOGO DA VELHA</p><h1>Tabuleiro</h1></div>
-      <p class="logged-player">Conectado como <strong id="current-player">…</strong></p>
+      <div class="header-actions">
+        <p class="logged-player">Conectado como <strong id="current-player">…</strong></p>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Ativar tema escuro"></button>
+      </div>
     </header>
-    <p class="game-status" id="game-status" role="status" aria-live="polite">Conectando à sala…</p>
+
+    <section class="match-overview" aria-label="Situação da partida">
+      <p class="game-status" id="game-status" role="status" aria-live="polite">Conectando à sala…</p>
+      <p class="turn-indicator" id="turn-indicator">Aguardando definição do jogador da vez</p>
+    </section>
+
     <section class="scoreboard" aria-label="Placar da partida">
-      <div class="player-score"><span><span id="player-a-name">Jogador A</span> <small id="player-a-symbol">(X)</small></span><strong id="player-a-score">0</strong></div>
+      <div class="player-score player-x" id="player-a-card"><span><span id="player-a-name">Jogador A</span> <small id="player-a-symbol">(X)</small></span><strong id="player-a-score">0</strong></div>
       <span class="score-separator" aria-hidden="true">×</span>
-      <div class="player-score"><span><span id="player-b-name">Jogador B</span> <small id="player-b-symbol">(O)</small></span><strong id="player-b-score">0</strong></div>
+      <div class="player-score player-o" id="player-b-card"><span><span id="player-b-name">Jogador B</span> <small id="player-b-symbol">(O)</small></span><strong id="player-b-score">0</strong></div>
     </section>
-    <section class="board" aria-label="Tabuleiro de jogo da velha">
-      <button class="cell" data-index="0" type="button" aria-label="Casa 1" disabled></button><button class="cell" data-index="1" type="button" aria-label="Casa 2" disabled></button><button class="cell" data-index="2" type="button" aria-label="Casa 3" disabled></button>
-      <button class="cell" data-index="3" type="button" aria-label="Casa 4" disabled></button><button class="cell" data-index="4" type="button" aria-label="Casa 5" disabled></button><button class="cell" data-index="5" type="button" aria-label="Casa 6" disabled></button>
-      <button class="cell" data-index="6" type="button" aria-label="Casa 7" disabled></button><button class="cell" data-index="7" type="button" aria-label="Casa 8" disabled></button><button class="cell" data-index="8" type="button" aria-label="Casa 9" disabled></button>
+
+    <section class="board" id="game-board" aria-label="Tabuleiro de jogo da velha" aria-describedby="turn-indicator">
+      <button class="cell" data-index="0" type="button" aria-label="Casa 1, vazia" disabled></button><button class="cell" data-index="1" type="button" aria-label="Casa 2, vazia" disabled></button><button class="cell" data-index="2" type="button" aria-label="Casa 3, vazia" disabled></button>
+      <button class="cell" data-index="3" type="button" aria-label="Casa 4, vazia" disabled></button><button class="cell" data-index="4" type="button" aria-label="Casa 5, vazia" disabled></button><button class="cell" data-index="5" type="button" aria-label="Casa 6, vazia" disabled></button>
+      <button class="cell" data-index="6" type="button" aria-label="Casa 7, vazia" disabled></button><button class="cell" data-index="7" type="button" aria-label="Casa 8, vazia" disabled></button><button class="cell" data-index="8" type="button" aria-label="Casa 9, vazia" disabled></button>
     </section>
+
     <div class="game-actions">
       <button class="button resign-button" id="resign-button" type="button" disabled>Desistir</button>
       <button class="button close-button" id="close-button" type="button" disabled>Encerrar sala</button>
     </div>
   </main>
+
+  <dialog class="action-dialog" id="confirmation-dialog" aria-labelledby="confirmation-title" aria-describedby="confirmation-description">
+    <form method="dialog">
+      <p class="eyebrow">CONFIRMAÇÃO</p>
+      <h2 id="confirmation-title">Confirmar ação</h2>
+      <p id="confirmation-description">Esta ação não poderá ser desfeita.</p>
+      <div class="dialog-actions">
+        <button class="button" value="cancel">Cancelar</button>
+        <button class="button danger" id="confirmation-submit" value="confirm">Confirmar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="action-dialog result-dialog" id="room-result-dialog" aria-labelledby="room-result-title" aria-describedby="room-result-description">
+    <div>
+      <p class="eyebrow">SALA ENCERRADA</p>
+      <h2 id="room-result-title">A partida terminou</h2>
+      <p id="room-result-description">A sala foi encerrada.</p>
+      <button class="button primary" id="room-result-button" type="button">Voltar ao painel</button>
+    </div>
+  </dialog>
 </body>
 </html>

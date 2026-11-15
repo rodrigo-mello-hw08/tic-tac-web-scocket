@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 @RequiredArgsConstructor
 public class PresenceService {
-    private static final long TOKEN_TTL_SECONDS = 60;
+    private static final long TOKEN_TTL_SECONDS = 6000;
     private static final String ACTIVE_USERS_TOPIC = "/topic/users/active";
 
     private final Map<String, Long> sessionPlayers = new ConcurrentHashMap<>();

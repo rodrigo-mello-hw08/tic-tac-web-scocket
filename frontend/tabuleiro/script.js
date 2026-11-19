@@ -81,7 +81,7 @@ else {
       renderMatch(state.nextMatch.match, state.nextMatch.match.symbolA === "X" ? room.playerA.id : room.playerB.id);
     } else renderMatch(state.match, state.nextPlayerId);
     if (state.result === "WIN") status.textContent = `${state.winnerPlayerId === room.playerA.id ? room.playerA.login : room.playerB.login} venceu a rodada!`;
-    else if (state.result === "DRAW") status.textContent = "Empate! Nova rodada iniciada.";
+    else if (state.result === "DRAW") status.textContent = "Empate! A última jogada ocupou a última casa sem formar uma sequência vencedora. Nova rodada iniciada; nenhum ponto foi somado.";
     else if (state.nextMatch) status.textContent = "Nova partida iniciada. Boa sorte!";
     else status.textContent = nextPlayerId === currentUserId ? "Sua vez de jogar." : "Vez do oponente.";
   }

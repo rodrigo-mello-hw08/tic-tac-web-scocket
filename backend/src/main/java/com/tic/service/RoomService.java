@@ -33,7 +33,7 @@ public class RoomService {
         String symbol = applyMove(match, board, playerId, cellIndex);
 
         boolean won = hasWinner(board.getCells(), symbol);
-        boolean draw = !won && board.getMoves() == 9;
+        boolean draw = !won && isBoardFull(board);
 
         Long winnerId = finishRound(room, match, playerId, won, draw);
         StartedRoom next = createNextMatchIfFinished(room, match, won || draw);
@@ -99,6 +99,10 @@ public class RoomService {
             case "O" -> 5;
             default -> 1;
         };
+    }
+
+    private boolean isBoardFull(Board board) {
+        return board.getCells().stream().allMatch(cell -> !cell.isEmpty());
     }
 
     @Transactional
